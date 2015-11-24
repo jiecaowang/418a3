@@ -49,13 +49,17 @@ bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 	if(soln > 0){
 		double t1 = (-B + sqrt(soln))/(2*A);
 		double t2 = (-B - sqrt(soln))/(2*A);
+
+        if (!ray.intersection.none && ray.intersection.t_value < t1)
+            return false;
+
 		ray.intersection.none = false;
 		ray.intersection.point = ray.origin + t1 * ray.dir;
 		ray.intersection.normal = Vector3D(ray.intersection.point[0], ray.intersection.point[1], ray.intersection.point[2]); 
 		ray.intersection.t_value = t1;
 
 		ray.intersection.point = modelToWorld * ray.intersection.point;
-		ray.intersection.normal = modelToWorld * ray.intersection.normal;
+        ray.intersection.normal = worldToModel.transpose() * ray.intersection.normal;
 		ray.intersection.normal.normalize();
 
 		std::cout << "intersection: " << ray.intersection.point << std::endl;
