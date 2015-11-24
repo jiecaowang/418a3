@@ -36,13 +36,13 @@ bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 	if(t <= 0){
 		return false;
 	}
-	// std::cout << "intersecting unit square";
+	
 	double xInModel = rayInModel.origin[0] + t * rayInModel.dir[0];
 	double yInModel = rayInModel.origin[1] + t * rayInModel.dir[1];
 
 	if(-0.5 <= xInModel && xInModel <= 0.5 && -0.5 <= yInModel && yInModel <= 0.5){
 		// An intersection has occured, now check if we should update
-		if (rayInModel.intersection.none || t < ray.intersection.t_value){
+		if (ray.intersection.none || t < ray.intersection.t_value){
 			// this unit square is the front most one to be intersected
 			// so we are update
 			ray.intersection.t_value = t;
@@ -51,7 +51,6 @@ bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 			newNormal.normalize();
 			ray.intersection.normal = newNormal;
 			ray.intersection.none = false;
-			std::cout << "unitsquare intersection" << ray.intersection.point << "\n";
 			return true;
 		}
 	}
@@ -63,8 +62,8 @@ bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 
 	//Src=http://www.ahinson.com/algorithms_general/Sections/Geometry/IntersectionOfParametricLineAndSphere.pdf
 
-	// if(!ray.intersection.none)
-	// 	std::cout << ray.intersection.none << std::endl;
+	if(!ray.intersection.none)
+		std::cout << ray.intersection.none << std::endl;
 
 	Ray3D rayInModel;
 	rayInModel.origin = worldToModel * ray.origin;
@@ -78,20 +77,22 @@ bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 	if(soln > 0){
 		double t1 = (-B + sqrt(soln))/(2*A);
 		double t2 = (-B - sqrt(soln))/(2*A);
-		ray.intersection.none = false;
-		ray.intersection.point = ray.origin + t1 * ray.dir;
-		ray.intersection.normal = Vector3D(ray.intersection.point[0], ray.intersection.point[1], ray.intersection.point[2]); 
-		ray.intersection.t_value = t1;
+		if (ray.intersection.none || t1 < ray.intersection.t_value){
+			ray.intersection.none = false;
+			ray.intersection.point = ray.origin + t1 * ray.dir;
+			ray.intersection.normal = Vector3D(ray.intersection.point[0], ray.intersection.point[1], ray.intersection.point[2]); 
+			ray.intersection.t_value = t1;
 
-		ray.intersection.point = modelToWorld * ray.intersection.point;
-		ray.intersection.normal = modelToWorld * ray.intersection.normal;
-		ray.intersection.normal.normalize();
+			ray.intersection.point = modelToWorld * ray.intersection.point;
+			ray.intersection.normal = worldToModel.transpose() * ray.intersection.normal;
+			ray.intersection.normal.normalize();
 
-		// std::cout << "intersection: " << ray.intersection.point << std::endl;
-		// std::cout << "normal: " << ray.intersection.normal << std::endl;
-		// std::cout << "t_val: " << ray.intersection.t_value << std::endl;
-		// std::cout << std::endl;
-		return true;
+			// std::cout << "intersection: " << ray.intersection.point << std::endl;
+			// std::cout << "normal: " << ray.intersection.normal << std::endl;
+			// std::cout << "t_val: " << ray.intersection.t_value << std::endl;
+			// std::cout << std::endl;
+			return true;
+		}
 	}
 
 

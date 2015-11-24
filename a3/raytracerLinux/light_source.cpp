@@ -19,8 +19,9 @@ void PointLight::shade( Ray3D& ray ) {
 	// std::cout << "specular:\t\t" << ray.intersection.mat->specular << "\t\t" << _col_specular << std::endl;
 	// std::cout << std::endl;
 
-	ray.col = _col_ambient * ray.intersection.mat->ambient;
+	ray.col = _col_ambient * ray.intersection.mat->ambient + Colour(0.3, 0.3, 0.3);
 	ray.col.clamp();
+
 	// TODO: implement this function to fill in values for ray.col 
 	// using phong shading.  Make sure your vectors are normalized, and
 	// clamp colour values to 1.0.
