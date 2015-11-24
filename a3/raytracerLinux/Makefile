@@ -9,6 +9,8 @@ raytracer:  raytracer.o util.o light_source.o scene_object.o bmp_io.o
 clean:
 	-rm -f core *.o
 	-rm raytracer
+	-rm view1.bmp
+	-rm view2.bmp
 	
 
 

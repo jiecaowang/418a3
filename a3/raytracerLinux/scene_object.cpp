@@ -33,9 +33,10 @@ bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 	rayInModel.origin = worldToModel * ray.origin;
 	rayInModel.dir = worldToModel * ray.dir;
 	double t = -(rayInModel.origin[2])/rayInModel.dir[2];
-	if(t <= 0){
-		return false;
-	}
+	// if(t <= 0){
+	// 	return false;
+	// }
+	std::cout << "intersecting unit square";
 	double xInModel = rayInModel.origin[0] + t * rayInModel.dir[0];
 	double yInModel = rayInModel.origin[1] + t * rayInModel.dir[1];
 
@@ -46,8 +47,11 @@ bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 			// so we are update
 			ray.intersection.t_value = t;
 			ray.intersection.point = modelToWorld * Point3D(xInModel, yInModel, 0);
-			ray.intersection.normal = worldToModel.transpose() * Vector3D(0, 0, 1);
+			Vector3D newNormal = worldToModel.transpose() * Vector3D(0, 0, 1);
+			newNormal.normalize();
+			ray.intersection.normal = newNormal;
 			ray.intersection.none = false;
+			std::cout << ray.intersection.point;
 			return true;
 		}
 	}
