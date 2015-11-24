@@ -33,10 +33,10 @@ bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 	rayInModel.origin = worldToModel * ray.origin;
 	rayInModel.dir = worldToModel * ray.dir;
 	double t = -(rayInModel.origin[2])/rayInModel.dir[2];
-	// if(t <= 0){
-	// 	return false;
-	// }
-	std::cout << "intersecting unit square";
+	if(t <= 0){
+		return false;
+	}
+	// std::cout << "intersecting unit square";
 	double xInModel = rayInModel.origin[0] + t * rayInModel.dir[0];
 	double yInModel = rayInModel.origin[1] + t * rayInModel.dir[1];
 
@@ -51,7 +51,7 @@ bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 			newNormal.normalize();
 			ray.intersection.normal = newNormal;
 			ray.intersection.none = false;
-			std::cout << ray.intersection.point;
+			std::cout << "unitsquare intersection" << ray.intersection.point << "\n";
 			return true;
 		}
 	}
@@ -63,8 +63,8 @@ bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 
 	//Src=http://www.ahinson.com/algorithms_general/Sections/Geometry/IntersectionOfParametricLineAndSphere.pdf
 
-	if(!ray.intersection.none)
-		std::cout << ray.intersection.none << std::endl;
+	// if(!ray.intersection.none)
+	// 	std::cout << ray.intersection.none << std::endl;
 
 	Ray3D rayInModel;
 	rayInModel.origin = worldToModel * ray.origin;
@@ -87,10 +87,10 @@ bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 		ray.intersection.normal = modelToWorld * ray.intersection.normal;
 		ray.intersection.normal.normalize();
 
-		std::cout << "intersection: " << ray.intersection.point << std::endl;
-		std::cout << "normal: " << ray.intersection.normal << std::endl;
-		std::cout << "t_val: " << ray.intersection.t_value << std::endl;
-		std::cout << std::endl;
+		// std::cout << "intersection: " << ray.intersection.point << std::endl;
+		// std::cout << "normal: " << ray.intersection.normal << std::endl;
+		// std::cout << "t_val: " << ray.intersection.t_value << std::endl;
+		// std::cout << std::endl;
 		return true;
 	}
 
