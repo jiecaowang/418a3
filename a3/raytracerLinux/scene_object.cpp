@@ -89,11 +89,6 @@ bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 		ray.intersection.point = modelToWorld * ray.intersection.point;
         ray.intersection.normal = worldToModel.transpose() * ray.intersection.normal;
 		ray.intersection.normal.normalize();
-
-		std::cout << "intersection: " << ray.intersection.point << std::endl;
-		std::cout << "normal: " << ray.intersection.normal << std::endl;
-		std::cout << "t_val: " << ray.intersection.t_value << std::endl;
-		std::cout << std::endl;
 		return true;
 	}
 
