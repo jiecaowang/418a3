@@ -1,0 +1,9 @@
+/* generated image files */
+*.bmp
+*.bmp
+
+/* visual studio generated files */
+a3/raytracerW32/Debug/
+*.opensdf
+*.sdf
+*.suo
