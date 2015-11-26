@@ -47,7 +47,7 @@ bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 			// so we are update
 			ray.intersection.t_value = t;
 			ray.intersection.point = modelToWorld * Point3D(xInModel, yInModel, 0);
-			Vector3D newNormal = worldToModel.transpose() * Vector3D(0, 0, 1);
+			Vector3D newNormal = transNorm(worldToModel, Vector3D(0, 0, 1));
 			newNormal.normalize();
 			ray.intersection.normal = newNormal;
 			ray.intersection.none = false;
@@ -83,12 +83,9 @@ bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 
 		ray.intersection.none = false;
 		ray.intersection.t_value = t1;
-		ray.intersection.point = ray.origin + t1 * ray.dir;
-		// Point3D pointInModel = rayInModel.origin + t1 * rayInModel.dir;
-
-		// std::cout << "point in model:\t\t" << pointInModel << "\n";
-		Vector3D newNormal = ray.intersection.point - ray.origin;
-		 // = worldToModel.transpose() * Vector3D(pointInModel[0], pointInModel[1], pointInModel[2]); 
+        ray.intersection.point = ray.origin + t1 * ray.dir;
+        Vector3D newNormal = Point3D() - ray.intersection.point;
+        newNormal = transNorm(worldToModel, newNormal);
 		newNormal.normalize();
 		ray.intersection.normal = newNormal;
 		
