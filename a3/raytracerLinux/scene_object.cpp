@@ -82,13 +82,16 @@ bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
             return false;
 
 		ray.intersection.none = false;
-		ray.intersection.point = ray.origin + t1 * ray.dir;
-		ray.intersection.normal = Vector3D(ray.intersection.point[0], ray.intersection.point[1], ray.intersection.point[2]); 
 		ray.intersection.t_value = t1;
+		ray.intersection.point = ray.origin + t1 * ray.dir;
+		// Point3D pointInModel = rayInModel.origin + t1 * rayInModel.dir;
 
-		ray.intersection.point = modelToWorld * ray.intersection.point;
-        ray.intersection.normal = worldToModel.transpose() * ray.intersection.normal;
-		ray.intersection.normal.normalize();
+		// std::cout << "point in model:\t\t" << pointInModel << "\n";
+		Vector3D newNormal = ray.intersection.point - ray.origin;
+		 // = worldToModel.transpose() * Vector3D(pointInModel[0], pointInModel[1], pointInModel[2]); 
+		newNormal.normalize();
+		ray.intersection.normal = newNormal;
+		
 		return true;
 	}
 

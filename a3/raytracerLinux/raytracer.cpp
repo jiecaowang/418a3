@@ -257,6 +257,7 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view,
 			
 			Ray3D ray(origin, Vector3D(imagePlane[0], imagePlane[1], imagePlane[2]));
 			ray.dir =  viewToWorld * ray.dir;
+			ray.dir.normalize();
 			ray.origin = viewToWorld * ray.origin;
 			Colour col = shadeRay(ray); 
 
@@ -291,13 +292,19 @@ int main(int argc, char* argv[])
 	Vector3D up(0, 1, 0);
 	double fov = 60;
 
-	// Defines a material for shading.
+	// // Defines a material for shading.
 	Material gold( Colour(0.3, 0.3, 0.3), Colour(0.75164, 0.60648, 0.22648), 
 			Colour(0.628281, 0.555802, 0.366065), 
 			51.2 );
 	Material jade( Colour(0, 0, 0), Colour(0.54, 0.89, 0.63), 
 			Colour(0.316228, 0.316228, 0.316228), 
 			12.8 );
+	// Material gold( Colour(0.3, 0.3, 0.3), Colour(0.23, 0.23, 0.23), 
+	// 		Colour(0.516228, 0.516228, 0.516228), 
+	// 		12.8 );
+	// Material jade( Colour(0, 0, 0), Colour(0.23, 0.23, 0.23), 
+	// 		Colour(0.516228, 0.516228, 0.516228), 
+	// 		12.8 );
 
 	// Defines a point light source.
 	raytracer.addLightSource( new PointLight(Point3D(0, 0, 5), 

@@ -233,7 +233,7 @@ double Colour::operator[](int i) const {
 void Colour::clamp() {
 	for (int i = 0; i < 3; i++) {
 		if (m_data[i] > 1.0) m_data[i] = 1.0; 
-		if (m_data[i] < 0.0) m_data[i] = 0.0; 
+		if (isnan(m_data[i]) || m_data[i] < 0.0) m_data[i] = 0.0; 
 	}
 }
 
