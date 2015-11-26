@@ -7,3 +7,7 @@ a3/raytracerW32/Debug/
 *.opensdf
 *.sdf
 *.suo
+
+/* Linux build generated files */
+./raytracer
+*.o
