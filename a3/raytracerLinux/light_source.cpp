@@ -9,6 +9,7 @@
 ***********************************************************/
 
 #include <cmath>
+#include <algorithm>
 #include "light_source.h"
 
 void PointLight::shade( Ray3D& ray ) {
@@ -19,44 +20,51 @@ void PointLight::shade( Ray3D& ray ) {
 	// std::cout << "specular:\t\t" << ray.intersection.mat->specular << "\t\t" << _col_specular << std::endl;
 	// std::cout << std::endl;
 	
-	// H is defined in: http://www.dgp.toronto.edu/~karan/courses/418/Lectures/lecture6.pdf
-    
+	// Everything taken from http://www.dgp.toronto.edu/~karan/courses/418/Notes/BasicRayTracing.pdf
 	
     if (!ray.intersection.none){
 
+        Colour I_a = _col_ambient;
+        Colour I_d = _col_diffuse;
+        Colour I_s = _col_specular;
+
+        Colour r_a = ray.intersection.mat->ambient;
+        Colour r_d = ray.intersection.mat->diffuse;
+        Colour r_s = ray.intersection.mat->specular;
+        double alpha = ray.intersection.mat->specular_exp;
+
+        Colour r_g = Colour();
+        Colour I_spec = Colour();
+
         Vector3D view = Vector3D(ray.origin - ray.intersection.point);
-        Vector3D incident =  -1 *  ray.dir;
-        //Vector3D H = view + incident;
-        //H.normalize();
 
-        ray.intersection.normal.normalize();
+        Vector3D n = ray.intersection.normal;
+        n.normalize();
 
-        Colour ambient = _col_ambient * ray.intersection.mat->ambient;
+        Vector3D s = -ray.dir;
+        s.normalize();
 
-        Colour diffuse = ray.intersection.normal.dot(incident) * _col_diffuse * ray.intersection.mat->diffuse;
-        //diffuse.clamp();
-        Colour Ks = ray.intersection.mat->specular;
-        Colour Is = _col_specular;
-        Vector3D N = ray.intersection.normal;
-        Vector3D H = incident;
-        double shiny = ray.intersection.mat->specular_exp;
+        Vector3D c = -ray.dir;
+        c.normalize();
 
-        Colour specular =  pow(std::max(0.0, N.dot(H)), shiny) * Ks * Is; 
+        Vector3D m = (2 * (s.dot(n)) * n) - s;
+        m.normalize();
+
+        Colour ambient = r_a * I_a;
+        Colour diffuse = std::max(n.dot(s), 0.0) * r_d * I_d;
+        Colour specular =  pow(std::max(0.0, c.dot(m)), alpha) * r_s * I_s; 
         
-        ray.col =  ambient
-        	+ diffuse  
-        	+ specular;
-        ray.col.clamp();
+        Colour secondary = Colour();
 
-            //std::cout << "error" << std::endl;
+        ray.col =  ambient
+        	+ diffuse
+        	+ specular
+            + secondary;
+        ray.col.clamp();
         
     }
 	
 
-	// TODO: implement this function to fill in values for ray.col 
-	// using phong shading.  Make sure your vectors are normalized, and
-	// clamp colour values to 1.0.
-	//
 	// It is assumed at this point that the intersection information in ray 
 	// is available.  So be sure that traverseScene() is called on the ray 
 	// before this function.  
