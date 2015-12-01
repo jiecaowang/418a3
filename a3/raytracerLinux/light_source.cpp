@@ -20,23 +20,32 @@ void PointLight::shade( Ray3D& ray ) {
 	// std::cout << std::endl;
 	
 	// H is defined in: http://www.dgp.toronto.edu/~karan/courses/418/Lectures/lecture6.pdf
+    
+	
     if (!ray.intersection.none){
 
-        Vector3D view = Vector3D(ray.origin[0] - ray.intersection.point[0], ray.origin[1] - ray.intersection.point[1], ray.origin[2] - ray.intersection.point[2]);
+        Vector3D view = Vector3D(ray.origin - ray.intersection.point);
         Vector3D incident =  -1 *  ray.dir;
-        Vector3D H = view + incident;
-        H.normalize();
+        //Vector3D H = view + incident;
+        //H.normalize();
+
+        ray.intersection.normal.normalize();
 
         Colour ambient = _col_ambient * ray.intersection.mat->ambient;
-        Colour diffuse = (ray.intersection.normal.dot(incident)) * (_col_diffuse * ray.intersection.mat->diffuse);
+
+        Colour diffuse = ray.intersection.normal.dot(incident) * _col_diffuse * ray.intersection.mat->diffuse;
         //diffuse.clamp();
-        Colour specular = pow(ray.intersection.normal.dot(H), ray.intersection.mat->specular_exp) * (_col_specular * ray.intersection.mat->specular);
+        Colour Ks = ray.intersection.mat->specular;
+        Colour Is = _col_specular;
+        Vector3D N = ray.intersection.normal;
+        Vector3D H = incident;
+        double shiny = ray.intersection.mat->specular_exp;
 
-        // std::cout << "specular Before:\t\t" << s << "\n";
-        //specular.clamp();
-        // std::cout << "specular After:\t\t" << s << "\n";
-
-        ray.col =  ambient  + diffuse +  specular;
+        Colour specular =  pow(std::max(0.0, N.dot(H)), shiny) * Ks * Is; 
+        
+        ray.col =  ambient
+        	+ diffuse  
+        	+ specular;
         ray.col.clamp();
 
             //std::cout << "error" << std::endl;

@@ -62,38 +62,42 @@ bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 
 	//Src=http://www.ahinson.com/algorithms_general/Sections/Geometry/IntersectionOfParametricLineAndSphere.pdf
 
-	if(!ray.intersection.none)
-		std::cout << ray.intersection.none << std::endl;
-
 	Ray3D rayInModel;
 	rayInModel.origin = worldToModel * ray.origin;
 	rayInModel.dir = worldToModel * ray.dir;
 
 	double A = rayInModel.dir.dot(rayInModel.dir);
-	double B = 2 * rayInModel.dir.dot(rayInModel.origin - Point3D());
+	double B = rayInModel.dir.dot(rayInModel.origin - Point3D());
 	double C = (rayInModel.origin - Point3D()).dot(rayInModel.origin - Point3D()) - 1;
 
-	double soln = B*B - 4*A*C;
-	if(soln > 0){
-		double t1 = (-B + sqrt(soln))/(2*A);
-		double t2 = (-B - sqrt(soln))/(2*A);
 
-        if (!ray.intersection.none && ray.intersection.t_value < t1)
-            return false;
-
-		ray.intersection.none = false;
-		ray.intersection.t_value = t1;
-        ray.intersection.point = ray.origin + t1 * ray.dir;
-        Vector3D newNormal = Point3D() - ray.intersection.point;
-        newNormal = transNorm(worldToModel, newNormal);
-		newNormal.normalize();
-		ray.intersection.normal = newNormal;
-		
-		return true;
+	double t_value;
+	double soln = B*B - A*C;
+	if(soln < 0){
+		return false; // No intersections
+	} else if (soln == 0){
+		t_value = -B/A;
+	} else {
+		double t1 = (-B + sqrt(soln))/A;
+		double t2 = (-B - sqrt(soln))/A;
+		if(t1 < 0 && t2 < 0)
+			return false;
+		else if(t1 > 0 && t2 < 0)
+			t_value = t1;
+		else if(t1 > t2 && t2 > 0)
+			t_value = t2;
 	}
 
+	if (!ray.intersection.none && ray.intersection.t_value < t_value)
+	    return false;
 
-	
-	return false;
+	ray.intersection.none = false;
+	ray.intersection.t_value = t_value;
+    ray.intersection.point = rayInModel.origin + t_value * rayInModel.dir;
+	ray.intersection.normal = ray.intersection.point - Point3D() ;
+	ray.intersection.normal = transNorm(worldToModel, ray.intersection.normal);
+	ray.intersection.point = modelToWorld * ray.intersection.point;
+
+	return true;
 }
 
