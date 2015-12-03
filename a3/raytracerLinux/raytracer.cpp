@@ -214,7 +214,7 @@ void Raytracer::flushPixelBuffer( char *file_name ) {
 	delete _bbuffer;
 }
 
-Colour Raytracer::shadeRay( Ray3D& ray ) {
+Colour Raytracer::shadeRay( Ray3D& ray, int reflectionRecurance  ) {
 	Colour col(0.0, 0.0, 0.0); 
 	traverseScene(_root, ray); 
 	
@@ -222,6 +222,20 @@ Colour Raytracer::shadeRay( Ray3D& ray ) {
 	// anything.
 	if (!ray.intersection.none) {
 		computeShading(ray); 
+		if (reflectionRecurance > 0){
+        	// std::cout << "I am reflecting" << std::endl;
+			Vector3D view = Vector3D(ray.origin[0] - ray.intersection.point[0], ray.origin[1] - ray.intersection.point[1], ray.origin[2] - ray.intersection.point[2]);
+        	Vector3D reflectedRayDir = 2 * (view.dot(ray.intersection.normal)) * ray.intersection.normal - view;
+        	reflectedRayDir.normalize();
+        	Ray3D reflectedRay = Ray3D(ray.intersection.point, reflectedRayDir);
+        	reflectionRecurance--;
+        	Colour reflectedRayColour = shadeRay(reflectedRay, reflectionRecurance);
+        	if (isnan(reflectedRay.col[0]) ){
+	        	std::cout << reflectedRayDir << std::endl;
+	        	std::cout << reflectedRayColour << std::endl;
+        	}
+        	ray.col = 0.9 * ray.col + 0.1 * reflectedRayColour;	
+        }
 		col = ray.col;  
 	}
 
@@ -259,7 +273,7 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view,
 			ray.dir =  viewToWorld * ray.dir;
 			ray.dir.normalize();
 			ray.origin = viewToWorld * ray.origin;
-			Colour col = shadeRay(ray); 
+			Colour col = shadeRay(ray, 3); 
 
 			_rbuffer[i*width+j] = int(col[0]*255);
 			_gbuffer[i*width+j] = int(col[1]*255);
