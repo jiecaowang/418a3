@@ -123,6 +123,8 @@ private:
 	// After intersection, calculate the colour of the ray by shading it
 	// with all light sources in the scene.
 	void computeShading( Ray3D& ray );
+
+	Vector3D reflect(Ray3D& ray);
 	
 	// Width and height of the viewport.
 	int _scrWidth;

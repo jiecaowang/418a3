@@ -53,13 +53,10 @@ void PointLight::shade( Ray3D& ray ) {
         Colour ambient = r_a * I_a;
         Colour diffuse = std::max(n.dot(s), 0.0) * r_d * I_d;
         Colour specular =  pow(std::max(0.0, c.dot(m)), alpha) * r_s * I_s; 
-        
-        Colour secondary = Colour();
 
-        ray.col =  ambient
+        ray.col = ambient
         	+ diffuse
-        	+ specular
-            + secondary;
+        	+ specular;
         ray.col.clamp();
         
     }

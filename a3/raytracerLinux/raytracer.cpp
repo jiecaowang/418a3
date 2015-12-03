@@ -218,32 +218,59 @@ Colour Raytracer::shadeRay( Ray3D& ray, int reflectionRecurance  ) {
 	Colour col(0.0, 0.0, 0.0); 
 	traverseScene(_root, ray); 
 	
+	/* Compute ray shading
+ 	 * if we need to recurse, then return blend, otherwise, return col
+ 	 */
+
+	if(!ray.intersection.none) {
+		computeShading(ray);
+		col = ray.col;
+
+		if(reflectionRecurance > 0){
+
+			// change direction of ray
+			Ray3D newRay(ray.intersection.point, reflect(ray));
+
+			//compute new shading
+			shadeRay(newRay, reflectionRecurance-1);
+			
+			col = ray.col + 0.3 * newRay.col;
+
+			col.clamp();
+		}
+	}
+	return col;
+
+/*
 	// Don't bother shading if the ray didn't hit 
 	// anything.
 	if (!ray.intersection.none) {
 		computeShading(ray); 
-		if (reflectionRecurance > 0){
-        	// std::cout << "I am reflecting" << std::endl;
-			Vector3D view = Vector3D(ray.origin[0] - ray.intersection.point[0], ray.origin[1] - ray.intersection.point[1], ray.origin[2] - ray.intersection.point[2]);
-        	Vector3D reflectedRayDir = 2 * (view.dot(ray.intersection.normal)) * ray.intersection.normal - view;
-        	reflectedRayDir.normalize();
-        	Ray3D reflectedRay = Ray3D(ray.intersection.point, reflectedRayDir);
-        	reflectionRecurance--;
-        	Colour reflectedRayColour = shadeRay(reflectedRay, reflectionRecurance);
-        	if (isnan(reflectedRay.col[0]) ){
-	        	std::cout << reflectedRayDir << std::endl;
-	        	std::cout << reflectedRayColour << std::endl;
-        	}
-        	ray.col = 0.9 * ray.col + 0.1 * reflectedRayColour;	
+        // std::cout << "I am reflecting" << std::endl;
+		
+        reflectionRecurance--;
+        Colour reflectedRayColour = shadeRay(reflectedRay, reflectionRecurance);
+        if (isnan(reflectedRay.col[0]) ){
+	       	std::cout << reflectedRayDir << std::endl;
+	       	std::cout << reflectedRayColour << std::endl;
         }
+        ray.col = 0 * ray.col + 1 * reflectedRayColour;
 		col = ray.col;  
 	}
-
+*/
 	// You'll want to call shadeRay recursively (with a different ray, 
 	// of course) here to implement reflection/refraction effects.  
 
 	return col; 
-}	
+}
+
+Vector3D Raytracer::reflect(Ray3D& ray){
+	Vector3D view = Vector3D(ray.origin - ray.intersection.point);
+    Vector3D reflectedRayDir = 2 * (view.dot(ray.intersection.normal)) * ray.intersection.normal - view;
+    reflectedRayDir.normalize();
+
+    return reflectedRayDir;
+}
 
 void Raytracer::render( int width, int height, Point3D eye, Vector3D view, 
 		Vector3D up, double fov, char* fileName ) {
@@ -292,8 +319,8 @@ int main(int argc, char* argv[])
 	// change this if you're just implementing part one of the 
 	// assignment.  
 	Raytracer raytracer;
-	int width = 320; 
-	int height = 240; 
+	int width = 640; 
+	int height = 480; 
 
 	if (argc == 3) {
 		width = atoi(argv[1]);
