@@ -234,7 +234,7 @@ Colour Raytracer::shadeRay( Ray3D& ray, int reflectionRecurance  ) {
 	        	std::cout << reflectedRayDir << std::endl;
 	        	std::cout << reflectedRayColour << std::endl;
         	}
-        	ray.col = ray.col + 0.1 * reflectedRayColour;	
+        	ray.col = 0.9 * ray.col + 0.1 * reflectedRayColour;	
         }
 		col = ray.col;  
 	}
