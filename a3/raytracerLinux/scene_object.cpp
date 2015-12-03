@@ -84,8 +84,11 @@ bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 			return false;
 		else if(t1 > 0 && t2 < 0)
 			t_value = t1;
-		else if(t1 > t2 && t2 > 0)
+		else if(t1 > t2 && t2 > 0 || t1 == 0)
 			t_value = t2;
+
+		std::cout << "t1 " << t1 << "   t2 " << t2 << std::endl;
+		std::cout << t_value << std::endl;
 	}
 
 	if (!ray.intersection.none && ray.intersection.t_value < t_value)
@@ -94,7 +97,7 @@ bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 	ray.intersection.none = false;
 	ray.intersection.t_value = t_value;
     ray.intersection.point = rayInModel.origin + t_value * rayInModel.dir;
-	ray.intersection.normal = ray.intersection.point - Point3D() ;
+	ray.intersection.normal = ray.intersection.point - Point3D();
 	ray.intersection.normal = transNorm(worldToModel, ray.intersection.normal);
 	ray.intersection.point = modelToWorld * ray.intersection.point;
 

@@ -36,6 +36,13 @@ Point3D& Point3D::operator =(const Point3D& other) {
 	return *this;
 }
 
+bool Point3D::isClose(const Point3D& other){
+	bool close1 = (m_data[0] - other.m_data[0]) < EPSILON;
+	bool close2 = (m_data[1] - other.m_data[1]) < EPSILON;
+	bool close3 = (m_data[2] - other.m_data[2]) < EPSILON;
+	return close1 && close2 && close3;
+}
+
 double& Point3D::operator[](int i) {
 	return m_data[i];
 }

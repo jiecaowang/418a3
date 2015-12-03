@@ -20,12 +20,16 @@
 #define M_PI	3.14159265358979323846
 #endif
 
+#ifndef EPSILON
+#define EPSILON	0.000001
+#endif
+
 class Point3D {
 public:
 	Point3D(); 
 	Point3D(double x, double y, double z);  
 	Point3D(const Point3D& other); 
-
+	bool isClose(const Point3D& other);
 	Point3D& operator =(const Point3D& other); 
 	double& operator[](int i); 
 	double operator[](int i) const; 

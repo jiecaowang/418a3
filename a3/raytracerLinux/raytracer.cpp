@@ -187,12 +187,16 @@ void Raytracer::computeShading( Ray3D& ray ) {
 		curLight->light->shade(ray);
 
 		if(!ray.intersection.none){
-			Ray3D newRay(ray.intersection.point, curLight->light->get_position() - ray.intersection.point);
+			Vector3D newDir = ray.intersection.point - curLight->light->get_position();
+			newDir.normalize();
+			Ray3D newRay(curLight->light->get_position(), newDir);
 
         	//compute new shading
         	traverseScene(_root, newRay);
 
-        	if(!newRay.intersection.none){
+        	if(!newRay.intersection.none && !newRay.intersection.point.isClose(ray.intersection.point)){
+        		std::cout << "old intersection!     " << ray.intersection.point << std::endl;
+        		std::cout << "new intersection!     " << newRay.intersection.point << std::endl;
         	    //in shadow
         	    ray.col = 0.5 * ray.col;
         	}
@@ -243,7 +247,7 @@ Colour Raytracer::shadeRay( Ray3D& ray, int reflectionRecurance  ) {
 			//compute new shading
 			shadeRay(newRay, reflectionRecurance-1);
 			
-			col = ray.col + 0 * newRay.col;
+			col = 1 * ray.col + .3 * newRay.col;
 
 			col.clamp();
 		}
@@ -274,8 +278,8 @@ Colour Raytracer::shadeRay( Ray3D& ray, int reflectionRecurance  ) {
 }
 
 Vector3D Raytracer::reflect(Ray3D& ray){
-	Vector3D view = Vector3D(ray.origin - ray.intersection.point);
-    Vector3D reflectedRayDir = 2 * (view.dot(ray.intersection.normal)) * ray.intersection.normal - view;
+	Vector3D view = -ray.dir;
+    Vector3D reflectedRayDir = (2 * (view.dot(-ray.intersection.normal)) * -ray.intersection.normal) - view;
     reflectedRayDir.normalize();
 
     return reflectedRayDir;
@@ -309,7 +313,7 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view,
 			ray.dir =  viewToWorld * ray.dir;
 			ray.dir.normalize();
 			ray.origin = viewToWorld * ray.origin;
-			Colour col = shadeRay(ray, 3); 
+			Colour col = shadeRay(ray, 1); 
 
 			_rbuffer[i*width+j] = int(col[0]*255);
 			_gbuffer[i*width+j] = int(col[1]*255);
