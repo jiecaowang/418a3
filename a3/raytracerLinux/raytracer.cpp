@@ -182,13 +182,22 @@ void Raytracer::traverseScene( SceneDagNode* node, Ray3D& ray ) {
 
 void Raytracer::computeShading( Ray3D& ray ) {
 	LightListNode* curLight = _lightSource;
-	for (;;) {
-		if (curLight == NULL) break;
+	while (curLight != NULL) {
 		// Each lightSource provides its own shading function.
-
-		// Implement shadows here if needed.
-
 		curLight->light->shade(ray);
+
+		if(!ray.intersection.none){
+			Ray3D newRay(ray.intersection.point, curLight->light->get_position() - ray.intersection.point);
+
+        	//compute new shading
+        	traverseScene(_root, newRay);
+
+        	if(!newRay.intersection.none){
+        	    //in shadow
+        	    ray.col = 0.5 * ray.col;
+        	}
+        }
+		
 		curLight = curLight->next;
 	}
 }
@@ -234,7 +243,7 @@ Colour Raytracer::shadeRay( Ray3D& ray, int reflectionRecurance  ) {
 			//compute new shading
 			shadeRay(newRay, reflectionRecurance-1);
 			
-			col = ray.col + 0.3 * newRay.col;
+			col = ray.col + 0 * newRay.col;
 
 			col.clamp();
 		}
