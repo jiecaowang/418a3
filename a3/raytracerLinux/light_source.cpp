@@ -57,6 +57,7 @@ void PointLight::shade( Ray3D& ray ) {
         ray.col = ambient
         	+ diffuse
         	+ specular;
+
         ray.col.clamp();
         
     }
