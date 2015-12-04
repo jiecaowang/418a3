@@ -9,6 +9,5 @@ a3/raytracerW32/Debug/
 *.suo
 
 /* Linux build generated files */
-./a3/raytracerLinux/raytracer
-./raytracer
+a3/raytracerW32/raytracer/
 *.o
