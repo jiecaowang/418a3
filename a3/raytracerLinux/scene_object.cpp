@@ -42,7 +42,7 @@ bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 	double yInModel = rayInModel.origin[1] + t * rayInModel.dir[1];
 
 	if(-0.5 <= xInModel && xInModel <= 0.5 && -0.5 <= yInModel && yInModel <= 0.5){
-		std::cout << "intersection! tvalue: " << t << std::endl;
+		//std::cout << "intersection! tvalue: " << t << std::endl;
 		// An intersection has occured, now check if we should update
 		if (ray.intersection.none || t < ray.intersection.t_value){
 			// this unit square is the front most one to be intersected
@@ -82,13 +82,13 @@ bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 	} else {
 		double t1 = (-B + sqrt(soln))/A;
 		double t2 = (-B - sqrt(soln))/A;
-		if(t1-EPSILON <= 0 && t2-EPSILON < 0) {
+		if(t1 <= 0 && t2 < 0) {
 			//std::cout << "no intersection" << std::endl;
 			return false;
-		} else if(t1-EPSILON > 0 && t2-EPSILON < 0) {
+		} else if(t1 > 0 && t2 < 0) {
 			std::cout << "using t1: " << t1 << std::endl;
 			t_value = t1;
-		} else if(t1 > t2 && t2-EPSILON > 0) {
+		} else if(t1 > t2 && t2 > 0) {
 			std::cout << "using t2: " << t2 << std::endl;
 			t_value = t2;
 		} else {
@@ -110,7 +110,8 @@ bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 	ray.intersection.t_value = t_value;
     ray.intersection.point = rayInModel.origin + t_value * rayInModel.dir;
 	ray.intersection.normal = ray.intersection.point - Point3D();
-	ray.intersection.normal = transNorm(worldToModel, ray.intersection.normal);
+	ray.intersection.normal = worldToModel.transpose() * ray.intersection.normal;
+	ray.intersection.normal.normalize();
 	ray.intersection.point = modelToWorld * ray.intersection.point;
 
 	return true;

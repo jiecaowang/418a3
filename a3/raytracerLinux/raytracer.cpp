@@ -16,6 +16,7 @@
 #include <cmath>
 #include <iostream>
 #include <cstdlib>
+#include <cassert>
 
 Raytracer::Raytracer() : _lightSource(NULL) {
 	_root = new SceneDagNode();
@@ -196,10 +197,10 @@ void Raytracer::computeShading( Ray3D& ray ) {
         	traverseScene(_root, newRay);
 
         	if(!newRay.intersection.none && !newRay.intersection.point.isClose(ray.intersection.point)){
-        		std::cout << "old intersection!     " << ray.intersection.point << std::endl;
-        		std::cout << "new intersection!     " << newRay.intersection.point << std::endl;
+        		//std::cout << "old intersection!     " << ray.intersection.point << std::endl;
+        		//std::cout << "new intersection!     " << newRay.intersection.point << std::endl;
         	    //in shadow
-        	    ray.col = 0.5 * ray.col;
+        	    ray.col = 0.6 * ray.col;
         	}
         }
 	
@@ -237,7 +238,7 @@ Colour Raytracer::shadeRay( Ray3D& ray, int reflectionRecurance  ) {
  	 */
  	 if(reflectionRecurance == 0 && !ray.intersection.none)
  	 {
- 	 	std::cout << "origin: " << ray.origin << "   intersection: " << ray.intersection.point << "    t_value: " << ray.intersection.t_value << std::endl;
+ 	 	//std::cout << "origin: " << ray.origin << "   intersection: " << ray.intersection.point << "    t_value: " << ray.intersection.t_value << std::endl;
  	 }
 
 	if(!ray.intersection.none) {
@@ -248,7 +249,7 @@ Colour Raytracer::shadeRay( Ray3D& ray, int reflectionRecurance  ) {
 
 			Vector3D reflectedDir = reflect(ray);
 			// change direction of ray
-			Ray3D newRay(ray.intersection.point, reflectedDir);
+			Ray3D newRay(ray.intersection.point + EPSILON * reflectedDir, reflectedDir);
 
 			//compute new shading
 			shadeRay(newRay, reflectionRecurance-1);
@@ -286,7 +287,11 @@ Colour Raytracer::shadeRay( Ray3D& ray, int reflectionRecurance  ) {
 Vector3D Raytracer::reflect(Ray3D& ray){
 	Vector3D view = -ray.dir;
     Vector3D reflectedRayDir = (2 * (view.dot(-ray.intersection.normal)) * -ray.intersection.normal) - view;
-    reflectedRayDir.normalize();
+    //reflectedRayDir.normalize();
+
+    std::cout << ray.intersection.normal.dot(ray.intersection.normal) << std::endl;
+    std::cout << reflectedRayDir.dot(ray.dir) << std::endl;
+    assert(ray.dir.dot(reflectedRayDir) != 0);
 
     return reflectedRayDir;
 }
@@ -342,8 +347,8 @@ int main(int argc, char* argv[])
 	// change this if you're just implementing part one of the 
 	// assignment.  
 	Raytracer raytracer;
-	int width = 640; 
-	int height = 480; 
+	int width = 600; 
+	int height = 400; 
 
 	if (argc == 3) {
 		width = atoi(argv[1]);
