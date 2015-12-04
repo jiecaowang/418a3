@@ -196,8 +196,8 @@ void Raytracer::computeShading( Ray3D& ray ) {
         	traverseScene(_root, newRay);
 
         	if(!newRay.intersection.none && !newRay.intersection.point.isClose(ray.intersection.point)){
-        		std::cout << "old intersection!     " << ray.intersection.point << std::endl;
-        		std::cout << "new intersection!     " << newRay.intersection.point << std::endl;
+        		// std::cout << "old intersection!     " << ray.intersection.point << std::endl;
+        		// std::cout << "new intersection!     " << newRay.intersection.point << std::endl;
         	    //in shadow
         	    ray.col = 0.5 * ray.col;
         	}
