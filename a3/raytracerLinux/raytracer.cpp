@@ -196,8 +196,8 @@ void Raytracer::computeShading( Ray3D& ray ) {
         	traverseScene(_root, newRay);
 
         	if(!newRay.intersection.none && !newRay.intersection.point.isClose(ray.intersection.point)){
-        		std::cout << "old intersection!     " << ray.intersection.point << std::endl;
-        		std::cout << "new intersection!     " << newRay.intersection.point << std::endl;
+        		// std::cout << "old intersection!     " << ray.intersection.point << std::endl;
+        		// std::cout << "new intersection!     " << newRay.intersection.point << std::endl;
         	    //in shadow
         	    ray.col = 0.5 * ray.col;
         	}
@@ -323,7 +323,7 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view,
 			ray.dir =  viewToWorld * ray.dir;
 			ray.dir.normalize();
 			ray.origin = viewToWorld * ray.origin;
-			Colour col = shadeRay(ray, 1); 
+			Colour col = shadeRay(ray, 0); 
 
 			_rbuffer[i*width+j] = int(col[0]*255);
 			_gbuffer[i*width+j] = int(col[1]*255);

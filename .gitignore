@@ -1,6 +1,7 @@
 /* generated image files */
-*.bmp
-*.bmp
+view1.bmp
+view2.bmp
+
 
 /* visual studio generated files */
 a3/raytracerW32/Debug/
@@ -9,5 +10,5 @@ a3/raytracerW32/Debug/
 *.suo
 
 /* Linux build generated files */
-a3/raytracerW32/raytracer/
+raytracer
 *.o
