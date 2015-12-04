@@ -125,7 +125,8 @@ private:
 	void computeShading( Ray3D& ray );
 
 	Vector3D reflect(Ray3D& ray);
-	
+	int isSpecular(Material* mat);
+
 	// Width and height of the viewport.
 	int _scrWidth;
 	int _scrHeight;

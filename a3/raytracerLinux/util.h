@@ -21,7 +21,7 @@
 #endif
 
 #ifndef EPSILON
-#define EPSILON	0.000001
+#define EPSILON	0.5
 #endif
 
 class Point3D {

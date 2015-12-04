@@ -12,6 +12,7 @@
 #include <iostream>
 #include "scene_object.h"
 
+
 bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 		const Matrix4x4& modelToWorld ) {
 	// TODO: implement intersection code for UnitSquare, which is
@@ -33,7 +34,7 @@ bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 	rayInModel.origin = worldToModel * ray.origin;
 	rayInModel.dir = worldToModel * ray.dir;
 	double t = -(rayInModel.origin[2])/rayInModel.dir[2];
-	if(t <= 0){
+	if(t-EPSILON < 0){
 		return false;
 	}
 	
@@ -41,6 +42,7 @@ bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 	double yInModel = rayInModel.origin[1] + t * rayInModel.dir[1];
 
 	if(-0.5 <= xInModel && xInModel <= 0.5 && -0.5 <= yInModel && yInModel <= 0.5){
+		std::cout << "intersection! tvalue: " << t << std::endl;
 		// An intersection has occured, now check if we should update
 		if (ray.intersection.none || t < ray.intersection.t_value){
 			// this unit square is the front most one to be intersected
@@ -80,19 +82,29 @@ bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 	} else {
 		double t1 = (-B + sqrt(soln))/A;
 		double t2 = (-B - sqrt(soln))/A;
-		if(t1 < 0 && t2 < 0)
+		if(t1-EPSILON <= 0 && t2-EPSILON < 0) {
+			//std::cout << "no intersection" << std::endl;
 			return false;
-		else if(t1 > 0 && t2 < 0)
+		} else if(t1-EPSILON > 0 && t2-EPSILON < 0) {
+			std::cout << "using t1: " << t1 << std::endl;
 			t_value = t1;
-		else if(t1 > t2 && t2 > 0 || t1 == 0)
+		} else if(t1 > t2 && t2-EPSILON > 0) {
+			std::cout << "using t2: " << t2 << std::endl;
 			t_value = t2;
+		} else {
+			std::cout << "ERROR t1: " << t1 << "  t2: " << t2  << std::endl;
+		}
 
-		std::cout << "t1 " << t1 << "   t2 " << t2 << std::endl;
-		std::cout << t_value << std::endl;
+		//std::cout << "t1 " << t1 << "   t2 " << t2 << std::endl;
+		//std::cout << t_value << std::endl;
 	}
 
-	if (!ray.intersection.none && ray.intersection.t_value < t_value)
+	//Point3D pointDiff = ray.intersection.point - (rayInModel.origin + t_value * rayInModel.dir);
+
+	if (!ray.intersection.none && ray.intersection.t_value < t_value ){
+		std::cout << "false alarm. current value > t_value " << std::endl;
 	    return false;
+	}
 
 	ray.intersection.none = false;
 	ray.intersection.t_value = t_value;

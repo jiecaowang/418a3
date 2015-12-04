@@ -186,6 +186,7 @@ void Raytracer::computeShading( Ray3D& ray ) {
 		// Each lightSource provides its own shading function.
 		curLight->light->shade(ray);
 
+
 		if(!ray.intersection.none){
 			Vector3D newDir = ray.intersection.point - curLight->light->get_position();
 			newDir.normalize();
@@ -201,7 +202,7 @@ void Raytracer::computeShading( Ray3D& ray ) {
         	    ray.col = 0.5 * ray.col;
         	}
         }
-		
+	
 		curLight = curLight->next;
 	}
 }
@@ -234,20 +235,25 @@ Colour Raytracer::shadeRay( Ray3D& ray, int reflectionRecurance  ) {
 	/* Compute ray shading
  	 * if we need to recurse, then return blend, otherwise, return col
  	 */
+ 	 if(reflectionRecurance == 0 && !ray.intersection.none)
+ 	 {
+ 	 	std::cout << "origin: " << ray.origin << "   intersection: " << ray.intersection.point << "    t_value: " << ray.intersection.t_value << std::endl;
+ 	 }
 
 	if(!ray.intersection.none) {
 		computeShading(ray);
 		col = ray.col;
 
-		if(reflectionRecurance > 0){
+		if(reflectionRecurance > 0 && isSpecular(ray.intersection.mat)){
 
+			Vector3D reflectedDir = reflect(ray);
 			// change direction of ray
-			Ray3D newRay(ray.intersection.point, reflect(ray));
+			Ray3D newRay(ray.intersection.point, reflectedDir);
 
 			//compute new shading
 			shadeRay(newRay, reflectionRecurance-1);
 			
-			col = 1 * ray.col + .3 * newRay.col;
+			col = 1 * ray.col + .1 * newRay.col;
 
 			col.clamp();
 		}
@@ -283,6 +289,10 @@ Vector3D Raytracer::reflect(Ray3D& ray){
     reflectedRayDir.normalize();
 
     return reflectedRayDir;
+}
+
+int Raytracer::isSpecular(Material* mat){
+	return (mat->specular[0] * mat->specular[0] +  mat->specular[1] * mat->specular[1] + mat->specular[2] * mat->specular[2]) > 0.75;
 }
 
 void Raytracer::render( int width, int height, Point3D eye, Vector3D view, 
