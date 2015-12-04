@@ -323,7 +323,7 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view,
 			ray.dir =  viewToWorld * ray.dir;
 			ray.dir.normalize();
 			ray.origin = viewToWorld * ray.origin;
-			Colour col = shadeRay(ray, 0); 
+			Colour col = shadeRay(ray, 1); 
 
 			_rbuffer[i*width+j] = int(col[0]*255);
 			_gbuffer[i*width+j] = int(col[1]*255);
