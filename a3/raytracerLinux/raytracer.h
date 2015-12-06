@@ -112,6 +112,8 @@ private:
 	// this function recursively for reflection and refraction.  
 	Colour shadeRay( Ray3D& ray, int reflectionRecurance ); 
 
+	Vector3D getStochasticOffset(double factor);
+
 	Colour shootMultiRayPerPixel(Ray3D& centerRay, int rayNum, double factor, int reflectionRecurance);
 
 	// Constructs a view to world transformation matrix based on the
