@@ -135,7 +135,7 @@ std::ostream& operator <<(std::ostream& o, const Colour& c);
 struct Material {
 	Material( Colour ambient, Colour diffuse, Colour specular, double exp ) :
 		ambient(ambient), diffuse(diffuse), specular(specular), 
-		specular_exp(exp) {}
+		specular_exp(exp){}
 	
 	// Ambient components for Phong shading.
 	Colour ambient; 
@@ -154,6 +154,7 @@ struct Intersection {
 	Vector3D normal;
 	// Material at the intersection.
 	Material* mat;
+	bool setMat;
 	// Position of the intersection point on your ray.
 	// (i.e. point = ray.origin + t_value * ray.dir)
 	// This is used when you need to intersect multiply objects and
@@ -166,10 +167,12 @@ struct Intersection {
 // Ray structure. 
 struct Ray3D {
 	Ray3D() {
-		intersection.none = true; 
+		intersection.none = true;
+		intersection.setMat = false; 
 	}
 	Ray3D( Point3D p, Vector3D v ) : origin(p), dir(v) {
 		intersection.none = true;
+		intersection.setMat = false;
 	}
 	// Origin and direction of the ray.
 	Point3D origin;
