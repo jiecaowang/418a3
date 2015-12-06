@@ -129,10 +129,10 @@ bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 			//std::cout << "no intersection" << std::endl;
 			return false;
 		} else if(t1 > 0 && t2 < 0) {
-			std::cout << "using t1: " << t1 << std::endl;
+			// std::cout << "using t1: " << t1 << std::endl;
 			t_value = t1;
 		} else if(t1 > t2 && t2 > 0) {
-			std::cout << "using t2: " << t2 << std::endl;
+			// std::cout << "using t2: " << t2 << std::endl;
 			t_value = t2;
 		} else {
 			std::cout << "ERROR t1: " << t1 << "  t2: " << t2  << std::endl;
