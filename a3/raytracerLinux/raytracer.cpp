@@ -334,7 +334,7 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view,
 			// one center ray per pixel
 			// Colour col = shadeRay(ray, 0); 
 			// anti aliasing by shooting multiple ray per pixel
-			Colour col = shootMultiRayPerPixel(ray, 2, factor, 1);
+			Colour col = shootMultiRayPerPixel(ray, 4, factor, 1);
 
 			_rbuffer[i*width+j] = int(col[0]*255);
 			_gbuffer[i*width+j] = int(col[1]*255);
@@ -345,80 +345,27 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view,
 	flushPixelBuffer(fileName);
 }
 
-double getStochasticOffset(double factor){
-	return (((double) rand() / (RAND_MAX)) + 0.5)/factor
+Vector3D Raytracer::getStochasticOffset(double factor){
+	double xOffset = (((double) rand() / (RAND_MAX)) + 0.5)/factor;
+	double yOffset = (((double) rand() / (RAND_MAX)) + 0.5)/factor;
+	double zOffset = (((double) rand() / (RAND_MAX)) + 0.5)/factor;
+	return Vector3D(xOffset, yOffset, zOffset);
 }
 
 Colour Raytracer::shootMultiRayPerPixel(Ray3D& centerRay, int rayNum, double factor, int reflectionRecurance){
-	// shoot multiple rays around this ray, at most 4 rays
-	if (rayNum == 4){
-		double r1x = getStochasticOffset();
-		double r1y = getStochasticOffset();
-		double r1z = getStochasticOffset();
-		double r2x = getStochasticOffset();
-		double r2y = getStochasticOffset();
-		double r2z = getStochasticOffset();
-		double r3x = getStochasticOffset();
-		double r3y = getStochasticOffset();
-		double r3z = getStochasticOffset();
-		double r4x = getStochasticOffset();
-		double r4y = getStochasticOffset();
-		double r4z = getStochasticOffset();
-		Ray3D ray1(centerRay.origin, Vector3D(centerRay.dir[0] + r1x, centerRay.dir[1] + r1y, centerRay.dir[2] + r1z));
-		Ray3D ray2(centerRay.origin, Vector3D(centerRay.dir[0] + r2x, centerRay.dir[1] + r2y, centerRay.dir[2] + r2z));
-		Ray3D ray3(centerRay.origin, Vector3D(centerRay.dir[0] + r3x, centerRay.dir[1] + r3y, centerRay.dir[2] + r3z));
-		Ray3D ray4(centerRay.origin, Vector3D(centerRay.dir[0] + r4x, centerRay.dir[1] + r4y, centerRay.dir[2] + r4z));
-		ray1.dir.normalize();
-		ray2.dir.normalize();
-		ray3.dir.normalize();
-		ray4.dir.normalize();
-		Colour col1 = shadeRay(ray1, reflectionRecurance);
-		Colour col2 = shadeRay(ray2, reflectionRecurance);
-		Colour col3 = shadeRay(ray3, reflectionRecurance);
-		Colour col4 = shadeRay(ray4, reflectionRecurance);
-		Colour finalCol = 0.25 * (col1 + col2 + col3 + col4);
-		return finalCol;
-	} else if (rayNum == 3) {
-		double r1x = ((double) rand() / (RAND_MAX)) + 0.5;
-		double r1y = ((double) rand() / (RAND_MAX)) + 0.5;
-		double r1z = ((double) rand() / (RAND_MAX)) + 0.5;
-		double r2x = ((double) rand() / (RAND_MAX)) + 0.5;
-		double r2y = ((double) rand() / (RAND_MAX)) + 0.5;
-		double r2z = ((double) rand() / (RAND_MAX)) + 0.5;
-		double r3x = ((double) rand() / (RAND_MAX)) + 0.5;
-		double r3y = ((double) rand() / (RAND_MAX)) + 0.5;
-		double r3z = ((double) rand() / (RAND_MAX)) + 0.5;
-		Ray3D ray1(centerRay.origin, Vector3D(centerRay.dir[0] + r1x/factor, centerRay.dir[1] + r1y/factor, centerRay.dir[2] + r1z/factor));
-		Ray3D ray2(centerRay.origin, Vector3D(centerRay.dir[0] + r2x/factor, centerRay.dir[1] + r2y/factor, centerRay.dir[2] + r2z/factor));
-		Ray3D ray3(centerRay.origin, Vector3D(centerRay.dir[0] + r3x/factor, centerRay.dir[1] + r3y/factor, centerRay.dir[2] + r3z/factor));
-		ray1.dir.normalize();
-		ray2.dir.normalize();
-		ray3.dir.normalize();
-		Colour col1 = shadeRay(ray1, reflectionRecurance);
-		Colour col2 = shadeRay(ray2, reflectionRecurance);
-		Colour col3 = shadeRay(ray3, reflectionRecurance);
-		Colour finalCol = (0.3333333) * (col1 + col2 + col3);
-		return finalCol;
-	} else if (rayNum == 2) {
-		double r1x = ((double) rand() / (RAND_MAX)) + 0.5;
-		double r1y = ((double) rand() / (RAND_MAX)) + 0.5;
-		double r2x = ((double) rand() / (RAND_MAX)) + 0.5;
-		double r2y = ((double) rand() / (RAND_MAX)) + 0.5;
-		Ray3D ray1(centerRay.origin, Vector3D(centerRay.dir[0] + r1x/factor, centerRay.dir[1] + r1y/factor, centerRay.dir[2]));
-		Ray3D ray2(centerRay.origin, Vector3D(centerRay.dir[0] + r2x/factor, centerRay.dir[1] + r2y/factor, centerRay.dir[2]));
-		ray1.dir.normalize();
-		ray2.dir.normalize();
-		Colour col1 = shadeRay(ray1, reflectionRecurance);
-		Colour col2 = shadeRay(ray2, reflectionRecurance);
-		Colour finalCol = 0.5 * (col1 + col2);
-		return finalCol;
-	} else if (rayNum == 1) {
-		centerRay.dir.normalize();
-		Colour finalCol = shadeRay(centerRay, reflectionRecurance);
-		return finalCol;
-	} else {
-		std::cout << "Error, reflectionRecurance is more then 4\n";
+	// shoot multiple stochastic rays around this ray
+	
+	Colour sumCol(0.0, 0.0, 0.0); 
+	int	i = rayNum;
+	while(i > 0){
+		Ray3D stochasticRay(centerRay.origin, centerRay.dir + getStochasticOffset(factor));
+		stochasticRay.dir.normalize();
+		Colour stochasticCol = shadeRay(stochasticRay, reflectionRecurance);
+		sumCol = sumCol + stochasticCol;
+		i--;
 	}
+	sumCol = (1.0/rayNum) * sumCol;
+	return sumCol;
 }
 
 int main(int argc, char* argv[])
