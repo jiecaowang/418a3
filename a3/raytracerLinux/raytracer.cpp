@@ -260,6 +260,9 @@ Colour Raytracer::shadeRay( Ray3D& ray, int reflectionRecurance  ) {
 
 			col.clamp();
 		}
+		if (ray.intersection.mat.isRefractive){
+
+		}
 	}
 	return col;
 
@@ -296,6 +299,14 @@ Vector3D Raytracer::reflect(Ray3D& ray){
     assert(ray.dir.dot(reflectedRayDir) != 0);
 
     return reflectedRayDir;
+}
+
+Vector3D Raytracer::refract(Ray3D& ray){
+	// n stands for refreactive index
+	double nAir = 1.0;
+	Vector3D view = -ray.dir;
+	
+
 }
 
 int Raytracer::isSpecular(Material* mat){
@@ -393,7 +404,7 @@ int main(int argc, char* argv[])
 	// // Defines a material for shading.
 	Material gold( Colour(0.3, 0.3, 0.3), Colour(0.75164, 0.60648, 0.22648), 
 			Colour(0.628281, 0.555802, 0.366065), 
-			51.2 );
+			51.2, true, 1.6 );
 	Material jade( Colour(0, 0, 0), Colour(0.54, 0.89, 0.63), 
 			Colour(0.316228, 0.316228, 0.316228), 
 			12.8 );
