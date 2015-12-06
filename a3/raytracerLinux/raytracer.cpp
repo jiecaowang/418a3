@@ -334,7 +334,7 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view,
 			// one center ray per pixel
 			// Colour col = shadeRay(ray, 0); 
 			// anti aliasing by shooting multiple ray per pixel
-			Colour col = shootMultiRayPerPixel(ray, 3, factor, 1);
+			Colour col = shootMultiRayPerPixel(ray, 2, factor, 1);
 
 			_rbuffer[i*width+j] = int(col[0]*255);
 			_gbuffer[i*width+j] = int(col[1]*255);
@@ -345,25 +345,29 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view,
 	flushPixelBuffer(fileName);
 }
 
-// double getStochasticOffset(double factor){
-// 	return (((double) rand() / (RAND_MAX)) + 0.5)/factor
-// }
+double getStochasticOffset(double factor){
+	return (((double) rand() / (RAND_MAX)) + 0.5)/factor
+}
 
 Colour Raytracer::shootMultiRayPerPixel(Ray3D& centerRay, int rayNum, double factor, int reflectionRecurance){
 	// shoot multiple rays around this ray, at most 4 rays
 	if (rayNum == 4){
-		double r1x = ((double) rand() / (RAND_MAX)) + 0.5;
-		double r1y = ((double) rand() / (RAND_MAX)) + 0.5;
-		double r2x = ((double) rand() / (RAND_MAX)) + 0.5;
-		double r2y = ((double) rand() / (RAND_MAX)) + 0.5;
-		double r3x = ((double) rand() / (RAND_MAX)) + 0.5;
-		double r3y = ((double) rand() / (RAND_MAX)) + 0.5;
-		double r4x = ((double) rand() / (RAND_MAX)) + 0.5;
-		double r4y= ((double) rand() / (RAND_MAX)) + 0.5;
-		Ray3D ray1(centerRay.origin, Vector3D(centerRay.dir[0] + r1x/factor, centerRay.dir[1] + r1y/factor, centerRay.dir[2]));
-		Ray3D ray2(centerRay.origin, Vector3D(centerRay.dir[0] + r2x/factor, centerRay.dir[1] + r2y/factor, centerRay.dir[2]));
-		Ray3D ray3(centerRay.origin, Vector3D(centerRay.dir[0] + r3x/factor, centerRay.dir[1] + r3y/factor, centerRay.dir[2]));
-		Ray3D ray4(centerRay.origin, Vector3D(centerRay.dir[0] + r4x/factor, centerRay.dir[1] + r4y/factor, centerRay.dir[2]));
+		double r1x = getStochasticOffset();
+		double r1y = getStochasticOffset();
+		double r1z = getStochasticOffset();
+		double r2x = getStochasticOffset();
+		double r2y = getStochasticOffset();
+		double r2z = getStochasticOffset();
+		double r3x = getStochasticOffset();
+		double r3y = getStochasticOffset();
+		double r3z = getStochasticOffset();
+		double r4x = getStochasticOffset();
+		double r4y = getStochasticOffset();
+		double r4z = getStochasticOffset();
+		Ray3D ray1(centerRay.origin, Vector3D(centerRay.dir[0] + r1x, centerRay.dir[1] + r1y, centerRay.dir[2] + r1z));
+		Ray3D ray2(centerRay.origin, Vector3D(centerRay.dir[0] + r2x, centerRay.dir[1] + r2y, centerRay.dir[2] + r2z));
+		Ray3D ray3(centerRay.origin, Vector3D(centerRay.dir[0] + r3x, centerRay.dir[1] + r3y, centerRay.dir[2] + r3z));
+		Ray3D ray4(centerRay.origin, Vector3D(centerRay.dir[0] + r4x, centerRay.dir[1] + r4y, centerRay.dir[2] + r4z));
 		ray1.dir.normalize();
 		ray2.dir.normalize();
 		ray3.dir.normalize();
