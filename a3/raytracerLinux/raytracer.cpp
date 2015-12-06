@@ -165,7 +165,9 @@ void Raytracer::traverseScene( SceneDagNode* node, Ray3D& ray ) {
 	if (node->obj) {
 		// Perform intersection.
 		if (node->obj->intersect(ray, _worldToModel, _modelToWorld)) {
-			ray.intersection.mat = node->mat;
+			if (!ray.intersection.setMat){
+				ray.intersection.mat = node->mat;		
+			}
 		}
 	}
 	// Traverse the children.
@@ -368,6 +370,12 @@ int main(int argc, char* argv[])
 	Material jade( Colour(0, 0, 0), Colour(0.54, 0.89, 0.63), 
 			Colour(0.316228, 0.316228, 0.316228), 
 			12.8 );
+	Material checkboardWhite( Colour(0, 0, 0), Colour(0.9, 0.9, 0.9), 
+			Colour(0.316228, 0.316228, 0.316228), 
+			12.8 );
+	Material checkboardBlack( Colour(0, 0, 0), Colour(0.1, 0.1, 0.1), 
+			Colour(0.316228, 0.316228, 0.316228), 
+			12.8 );
 	// Material gold( Colour(0.3, 0.3, 0.3), Colour(0.23, 0.23, 0.23), 
 	// 		Colour(0.516228, 0.516228, 0.516228), 
 	// 		12.8 );
@@ -381,7 +389,7 @@ int main(int argc, char* argv[])
 
 	// Add a unit square into the scene with material mat.
 	SceneDagNode* sphere = raytracer.addObject( new UnitSphere(), &gold );
-	SceneDagNode* plane = raytracer.addObject( new UnitSquare(), &jade );
+	SceneDagNode* plane = raytracer.addObject( new UnitCheckboard(checkboardWhite, checkboardBlack), &jade );
 	
 	// Apply some transformations to the unit square.
 	double factor1[3] = { 1.0, 2.0, 1.0 };

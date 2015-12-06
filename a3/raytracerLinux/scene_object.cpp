@@ -40,6 +40,7 @@ bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 	
 	double xInModel = rayInModel.origin[0] + t * rayInModel.dir[0];
 	double yInModel = rayInModel.origin[1] + t * rayInModel.dir[1];
+	// Making check board
 
 	if(-0.5 <= xInModel && xInModel <= 0.5 && -0.5 <= yInModel && yInModel <= 0.5){
 		//std::cout << "intersection! tvalue: " << t << std::endl;
@@ -53,6 +54,48 @@ bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 			newNormal.normalize();
 			ray.intersection.normal = newNormal;
 			ray.intersection.none = false;
+			return true;
+		}
+	}
+	return false;
+}
+
+bool UnitCheckboard::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
+		const Matrix4x4& modelToWorld ) {
+	Ray3D rayInModel;
+	rayInModel.origin = worldToModel * ray.origin;
+	rayInModel.dir = worldToModel * ray.dir;
+	double t = -(rayInModel.origin[2])/rayInModel.dir[2];
+	if(t-EPSILON < 0){
+		return false;
+	}
+	
+	double xInModel = rayInModel.origin[0] + t * rayInModel.dir[0];
+	double yInModel = rayInModel.origin[1] + t * rayInModel.dir[1];
+	
+
+	if(-0.5 <= xInModel && xInModel <= 0.5 && -0.5 <= yInModel && yInModel <= 0.5){
+		//std::cout << "intersection! tvalue: " << t << std::endl;
+		// An intersection has occured, now check if we should update
+		if (ray.intersection.none || t < ray.intersection.t_value){
+			// this unit square is the front most one to be intersected
+			// so we are update
+			ray.intersection.t_value = t;
+			ray.intersection.point = modelToWorld * Point3D(xInModel, yInModel, 0);
+			Vector3D newNormal = transNorm(worldToModel, Vector3D(0, 0, 1));
+			newNormal.normalize();
+			ray.intersection.normal = newNormal;
+			ray.intersection.none = false;
+			// set material for check board, since we know this is an intersection on checkboard
+			// making 10 by 10 grid
+			int xTest = ((int) floor((xInModel + 0.5) * 10)) % 2;
+			int yTest = ((int) floor((yInModel + 0.5) * 10)) % 2;
+			if (xTest == yTest){
+				ray.intersection.mat = &whiteCellMat;
+			} else {
+				ray.intersection.mat = &blackCellMat;
+			}
+			ray.intersection.setMat = true; 
 			return true;
 		}
 	}
