@@ -165,9 +165,8 @@ void Raytracer::traverseScene( SceneDagNode* node, Ray3D& ray ) {
 	if (node->obj) {
 		// Perform intersection.
 		if (node->obj->intersect(ray, _worldToModel, _modelToWorld)) {
-			if (!ray.intersection.setMat){
-				ray.intersection.mat = node->mat;		
-			}
+			ray.intersection.mat = node->mat->getMaterial(_worldToModel * ray.intersection.point);
+			//std::cout << ray.intersection.mat->specular << std::endl;	
 		}
 	}
 	// Traverse the children.
@@ -260,39 +259,17 @@ Colour Raytracer::shadeRay( Ray3D& ray, int reflectionRecurance  ) {
 
 			col.clamp();
 		}
+		if(ray.intersection.mat)
+			free(ray.intersection.mat);
 	}
-	return col;
-
-/*
-	// Don't bother shading if the ray didn't hit 
-	// anything.
-	if (!ray.intersection.none) {
-		computeShading(ray); 
-        // std::cout << "I am reflecting" << std::endl;
-		
-        reflectionRecurance--;
-        Colour reflectedRayColour = shadeRay(reflectedRay, reflectionRecurance);
-        if (isnan(reflectedRay.col[0]) ){
-	       	std::cout << reflectedRayDir << std::endl;
-	       	std::cout << reflectedRayColour << std::endl;
-        }
-        ray.col = 0 * ray.col + 1 * reflectedRayColour;
-		col = ray.col;  
-	}
-*/
-	// You'll want to call shadeRay recursively (with a different ray, 
-	// of course) here to implement reflection/refraction effects.  
 
 	return col; 
 }
 
 Vector3D Raytracer::reflect(Ray3D& ray){
 	Vector3D view = -ray.dir;
-    Vector3D reflectedRayDir = (2 * (view.dot(-ray.intersection.normal)) * -ray.intersection.normal) - view;
-    //reflectedRayDir.normalize();
+    Vector3D reflectedRayDir = (2 * (view.dot(ray.intersection.normal)) * ray.intersection.normal) - view;
 
-    std::cout << ray.intersection.normal.dot(ray.intersection.normal) << std::endl;
-    std::cout << reflectedRayDir.dot(ray.dir) << std::endl;
     assert(ray.dir.dot(reflectedRayDir) != 0);
 
     return reflectedRayDir;
@@ -334,7 +311,7 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view,
 			// one center ray per pixel
 			// Colour col = shadeRay(ray, 0); 
 			// anti aliasing by shooting multiple ray per pixel
-			Colour col = shootMultiRayPerPixel(ray, 3, factor, 0);
+			Colour col = shootMultiRayPerPixel(ray, 3, factor, 1);
 
 			_rbuffer[i*width+j] = int(col[0]*255);
 			_gbuffer[i*width+j] = int(col[1]*255);
@@ -351,6 +328,7 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view,
 
 Colour Raytracer::shootMultiRayPerPixel(Ray3D& centerRay, int rayNum, double factor, int reflectionRecurance){
 	// shoot multiple rays around this ray, at most 4 rays
+
 	if (rayNum == 4){
 		double r1x = ((double) rand() / (RAND_MAX)) + 0.5;
 		double r1y = ((double) rand() / (RAND_MAX)) + 0.5;
@@ -439,38 +417,26 @@ int main(int argc, char* argv[])
 	Vector3D up(0, 1, 0);
 	double fov = 60;
 
-	// // Defines a material for shading.
-	Material gold( Colour(0.3, 0.3, 0.3), Colour(0.75164, 0.60648, 0.22648), 
-			Colour(0.628281, 0.555802, 0.366065), 
-			51.2 );
-	Material jade( Colour(0, 0, 0), Colour(0.54, 0.89, 0.63), 
-			Colour(0.316228, 0.316228, 0.316228), 
-			12.8 );
-	Material checkboardWhite( Colour(0, 0, 0), Colour(0.9, 0.9, 0.9), 
-			Colour(0.316228, 0.316228, 0.316228), 
-			12.8 );
-	Material checkboardBlack( Colour(0, 0, 0), Colour(0.1, 0.1, 0.1), 
-			Colour(0.316228, 0.316228, 0.316228), 
-			12.8 );
-	// Material gold( Colour(0.3, 0.3, 0.3), Colour(0.23, 0.23, 0.23), 
-	// 		Colour(0.516228, 0.516228, 0.516228), 
-	// 		12.8 );
-	// Material jade( Colour(0, 0, 0), Colour(0.23, 0.23, 0.23), 
-	// 		Colour(0.516228, 0.516228, 0.516228), 
-	// 		12.8 );
 
 	// Defines a point light source.
 	raytracer.addLightSource( new PointLight(Point3D(0, 0, 5), 
 				Colour(0.9, 0.9, 0.9) ) );
 
+	gold* mynewGold = new gold();
+	jade* mynewJade = new jade();
+	checkerBoard* mynewCheckerboard = new checkerBoard();
+	
+	std::cout << mynewGold->specular << std::endl;
+
 	// Add a unit square into the scene with material mat.
-	SceneDagNode* sphere = raytracer.addObject( new UnitSphere(), &gold );
-	SceneDagNode* plane = raytracer.addObject( new UnitCheckboard(checkboardWhite, checkboardBlack), &jade );
+	SceneDagNode* sphere = raytracer.addObject( new UnitSphere(), mynewGold);
+	std::cout << sphere->mat->specular << std::endl;
+	SceneDagNode* plane = raytracer.addObject( new UnitSquare(), mynewCheckerboard);
 	
 	// Apply some transformations to the unit square.
 	double factor1[3] = { 1.0, 2.0, 1.0 };
 	double factor2[3] = { 6.0, 6.0, 6.0 };
-	raytracer.translate(sphere, Vector3D(0, 0, -5));	
+	raytracer.translate(sphere, Vector3D(0, 0, -5));
 	raytracer.rotate(sphere, 'x', -45); 
 	raytracer.rotate(sphere, 'z', 45); 
 	raytracer.scale(sphere, Point3D(0, 0, 0), factor1);
@@ -483,6 +449,8 @@ int main(int argc, char* argv[])
 	// testing purposes.	
 	raytracer.render(width, height, eye, view, up, fov, "view1.bmp");
 	
+	std::cout << "done view 1" << std::endl;
+
 	// Render it from a different point of view.
 	Point3D eye2(4, 2, 1);
 	Vector3D view2(-4, -2, -6);

@@ -88,14 +88,6 @@ bool UnitCheckboard::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 			ray.intersection.none = false;
 			// set material for check board, since we know this is an intersection on checkboard
 			// making 10 by 10 grid
-			int xTest = ((int) floor((xInModel + 0.5) * 10)) % 2;
-			int yTest = ((int) floor((yInModel + 0.5) * 10)) % 2;
-			if (xTest == yTest){
-				ray.intersection.mat = &whiteCellMat;
-			} else {
-				ray.intersection.mat = &blackCellMat;
-			}
-			ray.intersection.setMat = true; 
 			return true;
 		}
 	}

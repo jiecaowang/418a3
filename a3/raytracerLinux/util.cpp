@@ -396,3 +396,49 @@ std::ostream& operator <<(std::ostream& os, const Matrix4x4& M) {
 
 
 
+gold::gold(){
+
+	// Ambient components for Phong shading.
+	ambient = Colour(0.3, 0.3, 0.3);
+	// Diffuse components for Phong shading.
+	diffuse = Colour(0.75164, 0.60648, 0.22648);
+	// Specular components for Phong shading.
+	specular = Colour(0.628281, 0.555802, 0.366065);
+	// Specular expoent.
+	specular_exp = 51.2;
+}
+
+jade::jade(){
+	
+	ambient = Colour(0, 0, 0);
+	// Diffuse components for Phong shading.
+	diffuse = Colour(0.54, 0.89, 0.63);
+	// Specular components for Phong shading.
+	specular = Colour(0.316228, 0.316228, 0.316228);
+	// Specular expoent.
+	specular_exp = 12.8;
+}
+
+
+Material* checkerBoard::getMaterial(Point3D point){
+	int xTest = ((int) floor((point[0] + 0.5) * 10)) % 2;
+	int yTest = ((int) floor((point[1] + 0.5) * 10)) % 2;
+	if (xTest == yTest){
+		return (new Material(Colour(0, 0, 0), Colour(0.9, 0.9, 0.9), 
+			Colour(0.316228, 0.316228, 0.316228), 
+			12.8 )); // White
+	} else {
+		return (new Material(Colour(0, 0, 0), Colour(0.1, 0.1, 0.1), 
+			Colour(0.316228, 0.316228, 0.316228), 
+			12.8 )); //Black
+	}
+}
+
+std::ostream& operator <<(std::ostream& os, const Material& M) {
+	return os << 	"M(" <<
+			 		"A( " << M.ambient << ") " << 
+			 		"D( " << M.diffuse << ") " <<
+			 		"S( " << M.specular << ") " <<
+			 		"shiny( " << M.specular_exp << ") " <<
+			 		") ";
+}

@@ -132,19 +132,29 @@ Colour operator *(double s, const Colour& c);
 Colour operator +(const Colour& u, const Colour& v); 
 std::ostream& operator <<(std::ostream& o, const Colour& c); 
 
-struct Material {
+
+class Material {
+public:
+	Material() :
+	ambient(Colour()), diffuse(Colour()), specular(Colour()),
+	specular_exp(0.0){}
+
 	Material( Colour ambient, Colour diffuse, Colour specular, double exp ) :
 		ambient(ambient), diffuse(diffuse), specular(specular), 
 		specular_exp(exp){}
 	
 	// Ambient components for Phong shading.
-	Colour ambient; 
+	Colour ambient;
 	// Diffuse components for Phong shading.
 	Colour diffuse;
 	// Specular components for Phong shading.
 	Colour specular;
 	// Specular expoent.
 	double specular_exp;
+
+	virtual Material* getMaterial(Point3D point) {
+		return new Material(ambient, diffuse, specular, specular_exp); //Material(ambient, diffuse, specular, specular_exp);
+	}
 };
 
 struct Intersection {
@@ -154,7 +164,7 @@ struct Intersection {
 	Vector3D normal;
 	// Material at the intersection.
 	Material* mat;
-	bool setMat;
+
 	// Position of the intersection point on your ray.
 	// (i.e. point = ray.origin + t_value * ray.dir)
 	// This is used when you need to intersect multiply objects and
@@ -168,11 +178,9 @@ struct Intersection {
 struct Ray3D {
 	Ray3D() {
 		intersection.none = true;
-		intersection.setMat = false; 
 	}
 	Ray3D( Point3D p, Vector3D v ) : origin(p), dir(v) {
 		intersection.none = true;
-		intersection.setMat = false;
 	}
 	// Origin and direction of the ray.
 	Point3D origin;
@@ -184,6 +192,27 @@ struct Ray3D {
 	// function.
 	Colour col;
 };
+
+
+
+
+	// // Defines a material for shading.
+class gold : public Material {
+public:
+	gold();
+};
+
+class jade : public Material {
+public:
+	jade();
+};
+
+class checkerBoard : public Material {
+public:
+	Material* getMaterial(Point3D point);
+};
+
+
 #endif
 
 
