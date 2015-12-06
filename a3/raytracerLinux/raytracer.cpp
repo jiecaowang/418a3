@@ -288,7 +288,7 @@ Colour Raytracer::shadeRay( Ray3D& ray, int reflectionRecurance  ) {
 
 Vector3D Raytracer::reflect(Ray3D& ray){
 	Vector3D view = -ray.dir;
-    Vector3D reflectedRayDir = (2 * (view.dot(-ray.intersection.normal)) * -ray.intersection.normal) - view;
+    Vector3D reflectedRayDir = (2 * (view.dot(ray.intersection.normal)) * ray.intersection.normal) - view;
     //reflectedRayDir.normalize();
 
     std::cout << ray.intersection.normal.dot(ray.intersection.normal) << std::endl;
