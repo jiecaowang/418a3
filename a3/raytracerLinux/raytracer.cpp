@@ -334,7 +334,7 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view,
 			// one center ray per pixel
 			// Colour col = shadeRay(ray, 0); 
 			// anti aliasing by shooting multiple ray per pixel
-			Colour col = shootMultiRayPerPixel(ray, 3, factor, 0);
+			Colour col = shootMultiRayPerPixel(ray, 3, factor, 1);
 
 			_rbuffer[i*width+j] = int(col[0]*255);
 			_gbuffer[i*width+j] = int(col[1]*255);
