@@ -1,0 +1,38 @@
+Started off the raytracer by implementing ray-sphere intersection and ray-square intersection.
+Then we implemented the ray casting and phong lighting model.
+From here is part 2.
+
+*************
+* Mandatory *
+*************
+
+Reflection - First part was reflection. This was implemented by taking the normal of the intersection on
+             and producing the reflected ray dir, using the intersection point as the new origin of the ray.
+             An issue we came up against was the ray origin conflicted with the object and we got the same 
+             intersection back. To work around this issue, we added a tiny epsilon to the ray origin along
+             it's direction.
+
+Shadow - Then we had the same issue with shadow but hadn't thought of the workaround yet. For shadow we ask
+         if from the light's origin, to the intersection, if we hit another intersection, and it isn't us,
+         then we're in shadow.
+
+**********
+* Choice *
+**********
+Anti Aliasing - For anti aliasing, we shoot out multiple rays from the eye location using a random stochastic
+                method for choosing ray direction. For each of these rays, we average the colours and that
+                becomes the pixels colour
+
+Texture Mapping - For texture mapping we define materials as a class instead. Whenever we determine that an
+                  intersection with an object has happened, we ask the material for the material properties
+                  at a t and s value. This includes the ambient, diffuse, specular, shiny, and even 
+                  refractive properties of the object.
+
+Cylinder - For the cylinder object, we first must consider the intersection of a ray and an infinite cylinder.
+           This produces the walls of our cylinder, but we want to still bound the cylinder to a top and a
+           bottom of the cylinder, so if we determine that the z value of the intersection is above 0.5, 
+           we must consider the plane at (0, 0, 0.5). We determine the intersection of the ray with the plane.
+           If this produces a point which follows the constraint x^2 + y^2 < 1, we're at the top of the 
+           cylinder. Same process follows for bottom of cylinder.
+
+
