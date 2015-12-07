@@ -408,6 +408,24 @@ gold::gold(){
 	specular_exp = 51.2;
 }
 
+glass::glass(){
+	// Ambient components for Phong shading.
+	ambient = Colour(0.0, 0.0, 0.0);
+	// Diffuse components for Phong shading.
+	diffuse = Colour(0.0, 0.0, 0.0);
+	// Specular components for Phong shading.
+	specular = Colour(0.0, 0.0, 0.0);
+	// Specular expoent.
+	specular_exp = 0;
+
+	isRefractive = true;
+
+	refractiveIndex = 1.5;
+}
+
+
+
+
 bronze::bronze(){
 	ambient = Colour(0.19125, 0.0735, 0.0225);
 	diffuse = Colour(0.7038, 0.27048, 0.0828);

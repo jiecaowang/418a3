@@ -137,11 +137,15 @@ class Material {
 public:
 	Material() :
 	ambient(Colour()), diffuse(Colour()), specular(Colour()),
-	specular_exp(0.0){}
+	specular_exp(0.0), isRefractive(false), refractiveIndex(0.0){}
 
-	Material( Colour ambient, Colour diffuse, Colour specular, double exp ) :
+	Material( Colour ambient, Colour diffuse, Colour specular, double exp, bool isRefractive, double refractiveIndex) :
 		ambient(ambient), diffuse(diffuse), specular(specular), 
-		specular_exp(exp){}
+		specular_exp(exp), isRefractive(isRefractive), refractiveIndex(refractiveIndex){}
+
+	Material( Colour ambient, Colour diffuse, Colour specular, double exp) :
+	ambient(ambient), diffuse(diffuse), specular(specular), 
+	specular_exp(exp), isRefractive(false), refractiveIndex(0.0){}
 	
 	// Ambient components for Phong shading.
 	Colour ambient;
@@ -152,8 +156,15 @@ public:
 	// Specular expoent.
 	double specular_exp;
 
+	bool isRefractive;
+
+	double refractiveIndex;
+
 	virtual Material* getMaterial(double s, double t) {
-		return new Material(ambient, diffuse, specular, specular_exp); //Material(ambient, diffuse, specular, specular_exp);
+		// if (isRefractive){
+		// 	std::cout << "getMaterial says refractive";
+		// }
+		return new Material(ambient, diffuse, specular, specular_exp, isRefractive, refractiveIndex); //Material(ambient, diffuse, specular, specular_exp);
 	}
 };
 
@@ -210,6 +221,11 @@ public:
 class bronze : public Material {
 public:
 	bronze();
+};
+
+class glass : public Material {
+public:
+	glass();
 };
 
 class checkerBoard : public Material {

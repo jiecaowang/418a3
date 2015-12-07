@@ -230,7 +230,7 @@ void Raytracer::flushPixelBuffer( char *file_name ) {
 	delete _bbuffer;
 }
 
-Colour Raytracer::shadeRay( Ray3D& ray, int reflectionRecurance  ) {
+Colour Raytracer::shadeRay( Ray3D& ray, int reflectionRecurance, int refractionRecurance) {
 	Colour col(0.0, 0.0, 0.0); 
 	traverseScene(_root, ray); 
 	
@@ -238,27 +238,70 @@ Colour Raytracer::shadeRay( Ray3D& ray, int reflectionRecurance  ) {
  	 * if we need to recurse, then return blend, otherwise, return col
  	 */
 	if(!ray.intersection.none) {
-		computeShading(ray);
-		col = ray.col;
+		if(ray.intersection.mat->isRefractive){
+			// std::cout << " is refractive" << "\n";
+			if(refractionRecurance > 0){
+				// std::cout << " refractionRecurance" << refractionRecurance << "\n";
+				double incomingIndex;
+				double outgoingIndex;
+				if(isInsideSphere(ray.dir, ray.intersection.normal)){
+					// std::cout << " Inside of Sphere" << "\n";
+					incomingIndex = ray.intersection.mat->refractiveIndex;
+					outgoingIndex = 1.0;
+					ray.intersection.normal = -1 * ray.intersection.normal;
+				} else {
+					// std::cout << " Outside of Sphere" << "\n";
+					incomingIndex = 1.0;
+					outgoingIndex = ray.intersection.mat->refractiveIndex;
+				}
 
-		if(reflectionRecurance > 0 && isSpecular(ray.intersection.mat)){
+				if (isNotCriticalAngle(ray, incomingIndex, outgoingIndex)){
+					Vector3D refractedDir = refract(ray, 1.0, ray.intersection.mat->refractiveIndex);
+					Ray3D newRay(ray.intersection.point + EPSILON * refractedDir, refractedDir);
+					Colour newCol = shadeRay(newRay, reflectionRecurance, refractionRecurance-1);
+					col = newCol;
+					// std::cout << " New col: " << newCol << "\n";
+					col.clamp();
+				} else {
+					Vector3D reflectedDir = reflect(ray);
+					// change direction of ray
+					Ray3D newRay(ray.intersection.point + EPSILON * reflectedDir, reflectedDir);
 
-			Vector3D reflectedDir = reflect(ray);
-			// change direction of ray
-			Ray3D newRay(ray.intersection.point + EPSILON * reflectedDir, reflectedDir);
+					//compute new shading
+					Colour newCol = shadeRay(newRay, reflectionRecurance-1, refractionRecurance);
+					
+					col = newCol;
 
-			//compute new shading
-			Colour newCol = shadeRay(newRay, reflectionRecurance-1);
-			
-			col = 1 * ray.col + .1 * newCol;
+					col.clamp();	
+				}
+			}
+		} else {
+			computeShading(ray);
+			col = ray.col;
 
-			col.clamp();
+			if(reflectionRecurance > 0 && isSpecular(ray.intersection.mat)){
+
+				Vector3D reflectedDir = reflect(ray);
+				// change direction of ray
+				Ray3D newRay(ray.intersection.point + EPSILON * reflectedDir, reflectedDir);
+
+				//compute new shading
+				Colour newCol = shadeRay(newRay, reflectionRecurance-1, 0);
+				
+				col = 1 * ray.col + .1 * newCol;
+
+				col.clamp();
+			}
+			if(ray.intersection.mat)
+				free(ray.intersection.mat);
 		}
-		if(ray.intersection.mat)
-			free(ray.intersection.mat);
 	}
 
 	return col; 
+}
+
+bool Raytracer::isInsideSphere(Vector3D incomingDir, Vector3D normal){
+	return (incomingDir.dot(normal) > 0);
 }
 
 Vector3D Raytracer::reflect(Ray3D& ray){
@@ -269,6 +312,35 @@ Vector3D Raytracer::reflect(Ray3D& ray){
 
     return reflectedRayDir;
 }
+
+bool Raytracer::isNotCriticalAngle( Ray3D& ray, double incomingIndex, double outgoingIndex ) {
+	if (incomingIndex < outgoingIndex){
+		// hitting sphere
+		return true;
+	} else {
+		// inside sphere
+		double criticalAngle = asin(outgoingIndex/incomingIndex);
+		double incomingTheta = acos(-1 * ray.dir.dot(ray.intersection.normal));
+		return incomingTheta < criticalAngle;
+	}
+}
+
+Vector3D Raytracer::refract(Ray3D& ray, double incomingIndex, double outgoingIndex){
+ 	// n stands for refreactive index		 	// n stands for refreactive index
+	Vector3D incoming = Vector3D(ray.dir);
+	incoming.normalize();
+	Vector3D normal = Vector3D(ray.intersection.normal);
+	normal.normalize();
+
+	double r = incomingIndex/outgoingIndex;
+	double c = (-1 * normal).dot(incoming);
+
+	// ask this guy http://stackoverflow.com/questions/29758545/how-to-find-refraction-vector-from-incoming-vector-and-surface-normal
+	Vector3D refractive = r * incoming + (r * c - sqrt(1 - pow(r, 2) * (1 - pow(c, 2)))) * normal;
+	refractive.normalize();
+
+	return refractive; 		 
+}		 
 
 int Raytracer::isSpecular(Material* mat){
 	return (mat->specular[0] * mat->specular[0] +  mat->specular[1] * mat->specular[1] + mat->specular[2] * mat->specular[2]) > 0.75;
@@ -304,9 +376,9 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view,
 			ray.origin = viewToWorld * ray.origin;
 			
 			// one center ray per pixel
-			// Colour col = shadeRay(ray, 0); 
+			// Colour col = shadeRay(ray, 0, 0); 
 			// anti aliasing by shooting multiple ray per pixel
-			Colour col = shootMultiRayPerPixel(ray, 1, factor, 1);
+			Colour col = shootMultiRayPerPixel(ray, 1, factor, 1, 2);
 
 			_rbuffer[i*width+j] = int(col[0]*255);
 			_gbuffer[i*width+j] = int(col[1]*255);
@@ -324,7 +396,7 @@ Vector3D Raytracer::getStochasticOffset(double factor){
 	return Vector3D(xOffset, yOffset, zOffset);
 }
 
-Colour Raytracer::shootMultiRayPerPixel(Ray3D& centerRay, int rayNum, double factor, int reflectionRecurance){
+Colour Raytracer::shootMultiRayPerPixel(Ray3D& centerRay, int rayNum, double factor, int reflectionRecurance, int refractionRecurance){
 	// shoot multiple stochastic rays around this ray
 	
 	Colour sumCol(0.0, 0.0, 0.0); 
@@ -332,7 +404,7 @@ Colour Raytracer::shootMultiRayPerPixel(Ray3D& centerRay, int rayNum, double fac
 	while(i > 0){
 		Ray3D stochasticRay(centerRay.origin, centerRay.dir + getStochasticOffset(factor));
 		stochasticRay.dir.normalize();
-		Colour stochasticCol = shadeRay(stochasticRay, reflectionRecurance);
+		Colour stochasticCol = shadeRay(stochasticRay, reflectionRecurance, refractionRecurance);
 		sumCol = sumCol + stochasticCol;
 		i--;
 	}
@@ -370,10 +442,11 @@ int main(int argc, char* argv[])
 	gold* mynewGold = new gold();
 	jade* mynewJade = new jade();
 	bronze* mynewBronze = new bronze();
+	glass* mynewGlass = new glass();
 	checkerBoard* mynewCheckerboard = new checkerBoard();
 
 	// Add a unit square into the scene with material mat.
-	SceneDagNode* sphere = raytracer.addObject( new UnitSphere(), mynewGold);
+	SceneDagNode* sphere = raytracer.addObject( new UnitSphere(), mynewGlass);
 	SceneDagNode* plane = raytracer.addObject( new UnitSquare(), mynewCheckerboard);
 	SceneDagNode* cylinder = raytracer.addObject(new UnitCylinder(), mynewBronze);
 
