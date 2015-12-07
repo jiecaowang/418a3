@@ -114,6 +114,8 @@ private:
 
 	Vector3D getStochasticOffset(double factor);
 
+	bool isNotCriticalAngle( Ray3D& ray, double incomingIndex, double outgoingIndex );
+
 	Colour shootMultiRayPerPixel(Ray3D& centerRay, int rayNum, double factor, int reflectionRecurance);
 
 	// Constructs a view to world transformation matrix based on the
@@ -129,6 +131,9 @@ private:
 	void computeShading( Ray3D& ray );
 
 	Vector3D reflect(Ray3D& ray);
+
+	Vector3D refract(Ray3D& ray, double incomingIndex, double refractedIndex);
+
 	int isSpecular(Material* mat);
 
 	// Width and height of the viewport.
