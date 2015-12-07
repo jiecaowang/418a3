@@ -18,6 +18,8 @@
 #include <cstdlib>
 #include <cassert>
 
+#define sqr(a) pow(a, 2)
+
 Raytracer::Raytracer() : _lightSource(NULL) {
 	_root = new SceneDagNode();
 }
@@ -286,7 +288,7 @@ Colour Raytracer::shadeRay( Ray3D& ray, int reflectionRecurance  ) {
 				} else {
 					std::cout << "WRONG WRONG WRONG"; 	
 				}
-				Vector3D refractedDir = refract(ray, incomingIndex, outgoingIndex);
+				Vector3D refractedDir = refract(ray, 1.0, 1.5);
 				Ray3D newRay(ray.intersection.point + EPSILON * refractedDir, refractedDir);
 				Colour newCol = shadeRay(newRay, 0);
 
@@ -358,20 +360,24 @@ Vector3D Raytracer::reflect(Ray3D& ray){
     return reflectedRayDir;
 }
 
-Vector3D Raytracer::refract(Ray3D& ray, double incomingIndex, double outgoingIndex){
+Vector3D Raytracer::refract(Ray3D& ray, double n1, double n2){
 	// n stands for refreactive index
 	
-	Vector3D incoming = Vector3D(-ray.dir);
-	incoming.normalize();
+	Vector3D incoming = Vector3D(ray.dir);
 	Vector3D normal = Vector3D(ray.intersection.normal);
+	
 	normal.normalize();
+	incoming.normalize();
 
-	double r = incomingIndex/outgoingIndex;
-	double c = (-1 * normal).dot(incoming);
-
+	double factor = n1/n2;
+	Vector3D normCrossIncoming = normal.cross(incoming);
+	
 	// ask this guy http://stackoverflow.com/questions/29758545/how-to-find-refraction-vector-from-incoming-vector-and-surface-normal
-	Vector3D refractive = r * incoming + (r * c - sqrt(1 - pow(r, 2) * (1 - pow(c, 2)))) * normal;
-	refractive.normalize();
+	Vector3D refractive = factor * (normal.cross(-normal.cross(incoming)));
+
+	refractive = refractive - sqrt(1 - sqr(factor) * normCrossIncoming.dot(normCrossIncoming)) * normal;
+
+
 	// may need to deal with critical angle thing later
 	// 
 	// double cosIncoming = incoming.dot(normal);
@@ -525,6 +531,8 @@ int main(int argc, char* argv[])
 	// testing purposes.	
 	raytracer.render(width, height, eye, view, up, fov, "view1.bmp");
 	
+	std::cout << "done image 1" << std::endl;
+
 	// Render it from a different point of view.
 	Point3D eye2(4, 2, 1);
 	Vector3D view2(-4, -2, -6);
