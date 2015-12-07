@@ -429,7 +429,7 @@ glass::glass(){
 bronze::bronze(){
 	ambient = Colour(0.19125, 0.0735, 0.0225);
 	diffuse = Colour(0.7038, 0.27048, 0.0828);
-	specular = Colour(0.256777,	0.137622, 0.086014);
+	specular = Colour(0.8,	0.8, 0.8);
 	specular_exp = 	0.1 * 128;
 }
 

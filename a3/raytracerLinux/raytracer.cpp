@@ -453,7 +453,7 @@ int main(int argc, char* argv[])
 
 	// Apply some transformations to the unit square.
 	double factor1[3] = { 1.0, 2.0, 1.0 };
-	double factor2[3] = { 6.0, 6.0, 6.0 };
+	double factor2[3] = { 10.0, 10.0, 10.0 };
 	double factor3[3] = { 1.0, 1.0, 1.0 };
 
 	raytracer.translate(cylinder, Vector3D(-2, 2, -4));
