@@ -190,22 +190,30 @@ void Raytracer::computeShading( Ray3D& ray ) {
 
 
 		if(!ray.intersection.none){
-			Vector3D newDir = ray.intersection.point - curLight->light->get_position();
-			newDir.normalize();
-			Ray3D newRay(curLight->light->get_position(), newDir);
+			Colour totalColour;
+			Colour currentColour = ray.col;
+			for(int i = 0; i < 4; i++) {
+				Vector3D newDir = ray.intersection.point - (curLight->light->get_position() + Vector3D(0, i*0.0000025, 0));
+				newDir.normalize();
+				Ray3D newRay(curLight->light->get_position(), newDir);
 
-        	//compute new shading
-        	traverseScene(_root, newRay);
+        		//compute new shading
+        		traverseScene(_root, newRay);
 
-        	if(!newRay.intersection.none && !newRay.intersection.point.isClose(ray.intersection.point)){
-        		//std::cout << "old intersection!     " << ray.intersection.point << std::endl;
-        		//std::cout << "new intersection!     " << newRay.intersection.point << std::endl;
-        	    //in shadow
-        	    ray.col = 0.6 * ray.col;
+        		if(!newRay.intersection.none && !newRay.intersection.point.isClose(ray.intersection.point)){
+        			//std::cout << "old intersection!     " << ray.intersection.point << std::endl;
+        			//std::cout << "new intersection!     " << newRay.intersection.point << std::endl;
+        		    //in shadow
+        	    	currentColour = 0.6 * currentColour;
+        		}
+        		totalColour = totalColour + currentColour;
         	}
-        }
-	
+        	totalColour = 0.25 * totalColour;
+        	ray.col = totalColour;
+        	ray.col.clamp();
+		
 		curLight = curLight->next;
+		}
 	}
 }
 
@@ -306,7 +314,7 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view,
 			// one center ray per pixel
 			// Colour col = shadeRay(ray, 0); 
 			// anti aliasing by shooting multiple ray per pixel
-			Colour col = shootMultiRayPerPixel(ray, 1, factor, 1);
+			Colour col = shootMultiRayPerPixel(ray, 3, factor, 1);
 
 			_rbuffer[i*width+j] = int(col[0]*255);
 			_gbuffer[i*width+j] = int(col[1]*255);
@@ -364,7 +372,7 @@ int main(int argc, char* argv[])
 
 
 	// Defines a point light source.
-	raytracer.addLightSource( new PointLight(Point3D(0, 0, 5), 
+	raytracer.addLightSource( new AreaLight(Point3D(0, 0, 5), 
 				Colour(0.9, 0.9, 0.9) ) );
 
 	gold* mynewGold = new gold();
