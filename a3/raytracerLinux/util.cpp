@@ -408,6 +408,13 @@ gold::gold(){
 	specular_exp = 51.2;
 }
 
+bronze::bronze(){
+	ambient = Colour(0.19125, 0.0735, 0.0225);
+	diffuse = Colour(0.7038, 0.27048, 0.0828);
+	specular = Colour(0.256777,	0.137622, 0.086014);
+	specular_exp = 	0.1 * 128;
+}
+
 jade::jade(){
 	
 	ambient = Colour(0, 0, 0);
@@ -420,9 +427,9 @@ jade::jade(){
 }
 
 
-Material* checkerBoard::getMaterial(Point3D point){
-	int xTest = ((int) floor((point[0] + 0.5) * 10)) % 2;
-	int yTest = ((int) floor((point[1] + 0.5) * 10)) % 2;
+Material* checkerBoard::getMaterial(double s, double t){
+	int xTest = ((int) floor((s + 0.5) * 10)) % 2;
+	int yTest = ((int) floor((t + 0.5) * 10)) % 2;
 	if (xTest == yTest){
 		return (new Material(Colour(0, 0, 0), Colour(0.9, 0.9, 0.9), 
 			Colour(0.316228, 0.316228, 0.316228), 

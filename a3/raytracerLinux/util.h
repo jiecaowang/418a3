@@ -152,7 +152,7 @@ public:
 	// Specular expoent.
 	double specular_exp;
 
-	virtual Material* getMaterial(Point3D point) {
+	virtual Material* getMaterial(double s, double t) {
 		return new Material(ambient, diffuse, specular, specular_exp); //Material(ambient, diffuse, specular, specular_exp);
 	}
 };
@@ -207,9 +207,14 @@ public:
 	jade();
 };
 
+class bronze : public Material {
+public:
+	bronze();
+};
+
 class checkerBoard : public Material {
 public:
-	Material* getMaterial(Point3D point);
+	Material* getMaterial(double s, double t);
 };
 
 

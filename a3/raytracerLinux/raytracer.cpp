@@ -165,8 +165,8 @@ void Raytracer::traverseScene( SceneDagNode* node, Ray3D& ray ) {
 	if (node->obj) {
 		// Perform intersection.
 		if (node->obj->intersect(ray, _worldToModel, _modelToWorld)) {
-			ray.intersection.mat = node->mat->getMaterial(_worldToModel * ray.intersection.point);
-			//std::cout << ray.intersection.mat->specular << std::endl;	
+			Point3D texturePoint(_worldToModel * ray.intersection.point);
+			ray.intersection.mat = node->mat->getMaterial(texturePoint[0], texturePoint[1]);
 		}
 	}
 	// Traverse the children.
@@ -237,11 +237,6 @@ Colour Raytracer::shadeRay( Ray3D& ray, int reflectionRecurance  ) {
 	/* Compute ray shading
  	 * if we need to recurse, then return blend, otherwise, return col
  	 */
- 	 if(reflectionRecurance == 0 && !ray.intersection.none)
- 	 {
- 	 	//std::cout << "origin: " << ray.origin << "   intersection: " << ray.intersection.point << "    t_value: " << ray.intersection.t_value << std::endl;
- 	 }
-
 	if(!ray.intersection.none) {
 		computeShading(ray);
 		col = ray.col;
@@ -311,7 +306,7 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view,
 			// one center ray per pixel
 			// Colour col = shadeRay(ray, 0); 
 			// anti aliasing by shooting multiple ray per pixel
-			Colour col = shootMultiRayPerPixel(ray, 3, factor, 1);
+			Colour col = shootMultiRayPerPixel(ray, 1, factor, 1);
 
 			_rbuffer[i*width+j] = int(col[0]*255);
 			_gbuffer[i*width+j] = int(col[1]*255);
@@ -374,18 +369,26 @@ int main(int argc, char* argv[])
 
 	gold* mynewGold = new gold();
 	jade* mynewJade = new jade();
+	bronze* mynewBronze = new bronze();
 	checkerBoard* mynewCheckerboard = new checkerBoard();
-	
-	std::cout << mynewGold->specular << std::endl;
 
 	// Add a unit square into the scene with material mat.
 	SceneDagNode* sphere = raytracer.addObject( new UnitSphere(), mynewGold);
-	std::cout << sphere->mat->specular << std::endl;
 	SceneDagNode* plane = raytracer.addObject( new UnitSquare(), mynewCheckerboard);
-	
+	SceneDagNode* cylinder = raytracer.addObject(new UnitCylinder(), mynewBronze);
+
+
 	// Apply some transformations to the unit square.
 	double factor1[3] = { 1.0, 2.0, 1.0 };
 	double factor2[3] = { 6.0, 6.0, 6.0 };
+	double factor3[3] = { 1.0, 1.0, 1.0 };
+
+	raytracer.translate(cylinder, Vector3D(-2, 2, -4));
+	raytracer.scale(cylinder, Point3D(0, 0, 0), factor3);
+	//raytracer.rotate(cylinder, 'x', -45); 
+	//raytracer.rotate(cylinder, 'z', 45); 
+
+
 	raytracer.translate(sphere, Vector3D(0, 0, -5));
 	raytracer.rotate(sphere, 'x', -45); 
 	raytracer.rotate(sphere, 'z', 45); 
