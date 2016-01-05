@@ -17,6 +17,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <cassert>
+#include <time.h>
 
 #define sqr(a) pow(a, 2)
 
@@ -167,9 +168,8 @@ void Raytracer::traverseScene( SceneDagNode* node, Ray3D& ray ) {
 	if (node->obj) {
 		// Perform intersection.
 		if (node->obj->intersect(ray, _worldToModel, _modelToWorld)) {
-			if (!ray.intersection.setMat){
-				ray.intersection.mat = node->mat;		
-			}
+			Point3D texturePoint(_worldToModel * ray.intersection.point);
+			ray.intersection.mat = node->mat->getMaterial(texturePoint[0], texturePoint[1]);
 		}
 	}
 	// Traverse the children.
@@ -193,22 +193,30 @@ void Raytracer::computeShading( Ray3D& ray ) {
 
 
 		if(!ray.intersection.none){
-			Vector3D newDir = ray.intersection.point - curLight->light->get_position();
-			newDir.normalize();
-			Ray3D newRay(curLight->light->get_position(), newDir);
+			Colour totalColour;
+			Colour currentColour = ray.col;
+			for(int i = 0; i < 4; i++) {
+				Vector3D newDir = ray.intersection.point - (curLight->light->get_position() + Vector3D(0, i*0.0000025, 0));
+				newDir.normalize();
+				Ray3D newRay(curLight->light->get_position(), newDir);
 
-        	//compute new shading
-        	traverseScene(_root, newRay);
+        		//compute new shading
+        		traverseScene(_root, newRay);
 
-        	if(!newRay.intersection.none && !newRay.intersection.point.isClose(ray.intersection.point)){
-        		//std::cout << "old intersection!     " << ray.intersection.point << std::endl;
-        		//std::cout << "new intersection!     " << newRay.intersection.point << std::endl;
-        	    //in shadow
-        	    ray.col = 0.6 * ray.col;
+        		if(!newRay.intersection.none && !newRay.intersection.point.isClose(ray.intersection.point)){
+        			//std::cout << "old intersection!     " << ray.intersection.point << std::endl;
+        			//std::cout << "new intersection!     " << newRay.intersection.point << std::endl;
+        		    //in shadow
+        	    	currentColour = 0.6 * currentColour;
+        		}
+        		totalColour = totalColour + currentColour;
         	}
-        }
-	
+        	totalColour = 0.25 * totalColour;
+        	ray.col = totalColour;
+        	ray.col.clamp();
+		
 		curLight = curLight->next;
+		}
 	}
 }
 
@@ -233,6 +241,88 @@ void Raytracer::flushPixelBuffer( char *file_name ) {
 	delete _bbuffer;
 }
 
+Colour Raytracer::shadeRay( Ray3D& ray, int reflectionRecurance, int refractionRecurance) {
+	Colour col(0.0, 0.0, 0.0); 
+	traverseScene(_root, ray); 
+	
+	/* Compute ray shading
+ 	 * if we need to recurse, then return blend, otherwise, return col
+ 	 */
+	if(!ray.intersection.none) {
+		if(ray.intersection.mat->isRefractive){
+			// std::cout << " is refractive" << "\n";
+			if(refractionRecurance > 0){
+				// std::cout << " refractionRecurance" << refractionRecurance << "\n";
+				double incomingIndex;
+				double outgoingIndex;
+				if(isInsideSphere(ray.dir, ray.intersection.normal)){
+					// std::cout << " Inside of Sphere" << "\n";
+					incomingIndex = ray.intersection.mat->refractiveIndex;
+					outgoingIndex = 1.0;
+					ray.intersection.normal = -1 * ray.intersection.normal;
+				} else {
+					// std::cout << " Outside of Sphere" << "\n";
+					incomingIndex = 1.0;
+					outgoingIndex = ray.intersection.mat->refractiveIndex;
+				}
+
+				if (isNotCriticalAngle(ray, incomingIndex, outgoingIndex)){
+					Vector3D refractedDir = refract(ray, 1.0, ray.intersection.mat->refractiveIndex);
+					Ray3D newRay(ray.intersection.point + EPSILON * refractedDir, refractedDir);
+					Colour newCol = shadeRay(newRay, reflectionRecurance, refractionRecurance-1);
+					col = newCol;
+					// std::cout << " New col: " << newCol << "\n";
+					col.clamp();
+				} else {
+					Vector3D reflectedDir = reflect(ray);
+					// change direction of ray
+					Ray3D newRay(ray.intersection.point + EPSILON * reflectedDir, reflectedDir);
+
+					//compute new shading
+					Colour newCol = shadeRay(newRay, reflectionRecurance-1, refractionRecurance);
+					
+					col = newCol;
+
+					col.clamp();	
+				}
+			}
+		} else {
+			computeShading(ray);
+			col = ray.col;
+
+			if(reflectionRecurance > 0 && isSpecular(ray.intersection.mat)){
+
+				Vector3D reflectedDir = reflect(ray);
+				// change direction of ray
+				Ray3D newRay(ray.intersection.point + EPSILON * reflectedDir, reflectedDir);
+
+				//compute new shading
+				Colour newCol = shadeRay(newRay, reflectionRecurance-1, 0);
+				
+				col = 1 * ray.col + .1 * newCol;
+
+				col.clamp();
+			}
+			if(ray.intersection.mat)
+				free(ray.intersection.mat);
+		}
+	}
+
+	return col; 
+}
+
+bool Raytracer::isInsideSphere(Vector3D incomingDir, Vector3D normal){
+	return (incomingDir.dot(normal) > 0);
+}
+
+Vector3D Raytracer::reflect(Ray3D& ray){
+	Vector3D view = -ray.dir;
+    Vector3D reflectedRayDir = (2 * (view.dot(ray.intersection.normal)) * ray.intersection.normal) - view;
+    assert(ray.dir.dot(reflectedRayDir) != 0);
+
+    return reflectedRayDir;
+}
+
 bool Raytracer::isNotCriticalAngle( Ray3D& ray, double incomingIndex, double outgoingIndex ) {
 	if (incomingIndex < outgoingIndex){
 		// hitting sphere
@@ -245,155 +335,22 @@ bool Raytracer::isNotCriticalAngle( Ray3D& ray, double incomingIndex, double out
 	}
 }
 
-Colour Raytracer::shadeRay( Ray3D& ray, int reflectionRecurance  ) {
-	Colour col(0.0, 0.0, 0.0); 
-	traverseScene(_root, ray); 
-	
-	/* Compute ray shading
- 	 * if we need to recurse, then return blend, otherwise, return col
- 	 */
- 	 if(reflectionRecurance == 0 && !ray.intersection.none)
- 	 {
- 	 	//std::cout << "origin: " << ray.origin << "   intersection: " << ray.intersection.point << "    t_value: " << ray.intersection.t_value << std::endl;
- 	 }
-
-	if(!ray.intersection.none) {
-		computeShading(ray);
-		col = ray.col;
-
-		if (ray.intersection.mat->isRefractive){
-			double airIndex = 1.0;
-			double incomingIndex;
-			double outgoingIndex;
-			Vector3D incomingDir = -1 * ray.dir;
-			if(incomingDir.dot(ray.intersection.normal) < 0){
-				// inside of the sphere
-				ray.intersection.normal = -1 * ray.intersection.normal;
-				incomingIndex = ray.intersection.mat->refractiveIndex;
-				outgoingIndex = airIndex;
-				// std::cout << "Inside sphere!!!" << "\n";
-			} else {	
-				// upon hitting sphere
-				incomingIndex = airIndex;
-				outgoingIndex = ray.intersection.mat->refractiveIndex;
-				// std::cout << "Hitting sphere!!!"  << "\n";
-			}
-
-			if (isNotCriticalAngle(ray, incomingIndex, outgoingIndex)){
-				// not critical angle!!
-				if (incomingIndex == airIndex){
-					// std::cout << "Hitting sphere!  old col: " << col; 	
-				} else if (incomingIndex == ray.intersection.mat->refractiveIndex){
-					// std::cout << "Inside sphere!  old col: " << col; 	
-				} else {
-					std::cout << "WRONG WRONG WRONG"; 	
-				}
-				Vector3D refractedDir = refract(ray, 1.0, 1.5);
-				Ray3D newRay(ray.intersection.point + EPSILON * refractedDir, refractedDir);
-				Colour newCol = shadeRay(newRay, 0);
-
-				col = newCol;
-				// std::cout << " New col: " << newCol << "\n";
-				col.clamp();
-			} else {
-				Vector3D reflectedDir = reflect(ray);
-				// change direction of ray
-				Ray3D newRay(ray.intersection.point + EPSILON * reflectedDir, reflectedDir);
-
-				//compute new shading
-				Colour newCol = shadeRay(newRay, reflectionRecurance-1);
-				
-				col = newCol;
-
-				col.clamp();	
-			}
-		}
-
-		if(reflectionRecurance > 0 && isSpecular(ray.intersection.mat)){
-
-			Vector3D reflectedDir = reflect(ray);
-			// change direction of ray
-			Ray3D newRay(ray.intersection.point + EPSILON * reflectedDir, reflectedDir);
-
-			//compute new shading
-			Colour newCol = shadeRay(newRay, reflectionRecurance-1);
-			
-			col = 1 * ray.col + .1 * newCol;
-
-			col.clamp();
-		}
-	}
-	return col;
-
-/*
-	// Don't bother shading if the ray didn't hit 
-	// anything.
-	if (!ray.intersection.none) {
-		computeShading(ray); 
-        // std::cout << "I am reflecting" << std::endl;
-		
-        reflectionRecurance--;
-        Colour reflectedRayColour = shadeRay(reflectedRay, reflectionRecurance);
-        if (isnan(reflectedRay.col[0]) ){
-	       	std::cout << reflectedRayDir << std::endl;
-	       	std::cout << reflectedRayColour << std::endl;
-        }
-        ray.col = 0 * ray.col + 1 * reflectedRayColour;
-		col = ray.col;  
-	}
-*/
-	// You'll want to call shadeRay recursively (with a different ray, 
-	// of course) here to implement reflection/refraction effects.  
-
-	return col; 
-}
-
-Vector3D Raytracer::reflect(Ray3D& ray){
-	Vector3D view = -ray.dir;
-    Vector3D reflectedRayDir = (2 * (view.dot(ray.intersection.normal)) * ray.intersection.normal) - view;
-    //reflectedRayDir.normalize();
-
-    // std::cout << ray.intersection.normal.dot(ray.intersection.normal) << std::endl;
-    // std::cout << reflectedRayDir.dot(ray.dir) << std::endl;
-    assert(ray.dir.dot(reflectedRayDir) != 0);
-
-    return reflectedRayDir;
-}
-
-Vector3D Raytracer::refract(Ray3D& ray, double n1, double n2){
-	// n stands for refreactive index
-	
+Vector3D Raytracer::refract(Ray3D& ray, double incomingIndex, double outgoingIndex){
+ 	// n stands for refreactive index		 	// n stands for refreactive index
 	Vector3D incoming = Vector3D(ray.dir);
-	Vector3D normal = Vector3D(ray.intersection.normal);
-	
-	normal.normalize();
 	incoming.normalize();
+	Vector3D normal = Vector3D(ray.intersection.normal);
+	normal.normalize();
 
-	double factor = n1/n2;
-	Vector3D normCrossIncoming = normal.cross(incoming);
-	
+	double r = incomingIndex/outgoingIndex;
+	double c = (-1 * normal).dot(incoming);
+
 	// ask this guy http://stackoverflow.com/questions/29758545/how-to-find-refraction-vector-from-incoming-vector-and-surface-normal
-	Vector3D refractive = factor * (normal.cross(-normal.cross(incoming)));
+	Vector3D refractive = r * incoming + (r * c - sqrt(1 - pow(r, 2) * (1 - pow(c, 2)))) * normal;
+	refractive.normalize();
 
-	refractive = refractive - sqrt(1 - sqr(factor) * normCrossIncoming.dot(normCrossIncoming)) * normal;
-
-
-	// may need to deal with critical angle thing later
-	// 
-	// double cosIncoming = incoming.dot(normal);
-	// double incomingTheta = acos(cosIncoming);
-	// double sinRefractive = (incomingIndex/outgoingIndex) * sin(incomingTheta);
-	// double refreactiveTheta = asin(sinRefractive);
-
-	// double cosCalculatedRefractive = (-1 * normal).dot(refractive);
-	// double calculatedRefractiveTheta = acos(cosCalculatedRefractive);
-
-	// std::cout << "Angle diff: " << refreactiveTheta - calculatedRefractiveTheta << "\n";
-
-	return refractive;
-
-
-}
+	return refractive; 		 
+}		 
 
 int Raytracer::isSpecular(Material* mat){
 	return (mat->specular[0] * mat->specular[0] +  mat->specular[1] * mat->specular[1] + mat->specular[2] * mat->specular[2]) > 0.75;
@@ -429,9 +386,9 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view,
 			ray.origin = viewToWorld * ray.origin;
 			
 			// one center ray per pixel
-			Colour col = shadeRay(ray, 0); 
+			// Colour col = shadeRay(ray, 0, 0); 
 			// anti aliasing by shooting multiple ray per pixel
-			// Colour col = shootMultiRayPerPixel(ray, 4, factor, 0);
+			Colour col = shootMultiRayPerPixel(ray, 1, factor, 1, 2);
 
 			_rbuffer[i*width+j] = int(col[0]*255);
 			_gbuffer[i*width+j] = int(col[1]*255);
@@ -449,7 +406,7 @@ Vector3D Raytracer::getStochasticOffset(double factor){
 	return Vector3D(xOffset, yOffset, zOffset);
 }
 
-Colour Raytracer::shootMultiRayPerPixel(Ray3D& centerRay, int rayNum, double factor, int reflectionRecurance){
+Colour Raytracer::shootMultiRayPerPixel(Ray3D& centerRay, int rayNum, double factor, int reflectionRecurance, int refractionRecurance){
 	// shoot multiple stochastic rays around this ray
 	
 	Colour sumCol(0.0, 0.0, 0.0); 
@@ -457,7 +414,7 @@ Colour Raytracer::shootMultiRayPerPixel(Ray3D& centerRay, int rayNum, double fac
 	while(i > 0){
 		Ray3D stochasticRay(centerRay.origin, centerRay.dir + getStochasticOffset(factor));
 		stochasticRay.dir.normalize();
-		Colour stochasticCol = shadeRay(stochasticRay, reflectionRecurance);
+		Colour stochasticCol = shadeRay(stochasticRay, reflectionRecurance, refractionRecurance);
 		sumCol = sumCol + stochasticCol;
 		i--;
 	}
@@ -487,38 +444,35 @@ int main(int argc, char* argv[])
 	Vector3D up(0, 1, 0);
 	double fov = 60;
 
-	// // Defines a material for shading.
-	Material gold( Colour(0.3, 0.3, 0.3), Colour(0.75164, 0.60648, 0.22648), 
-			Colour(0.628281, 0.555802, 0.366065), 
-			51.2, true, 1);
-	Material jade( Colour(0, 0, 0), Colour(0.54, 0.89, 0.63), 
-			Colour(0.316228, 0.316228, 0.316228), 
-			12.8 );
-	Material checkboardWhite( Colour(0, 0, 0), Colour(0.9, 0.9, 0.9), 
-			Colour(0.316228, 0.316228, 0.316228), 
-			12.8 );
-	Material checkboardBlack( Colour(0, 0, 0), Colour(0.1, 0.1, 0.1), 
-			Colour(0.316228, 0.316228, 0.316228), 
-			12.8 );
-	// Material gold( Colour(0.3, 0.3, 0.3), Colour(0.23, 0.23, 0.23), 
-	// 		Colour(0.516228, 0.516228, 0.516228), 
-	// 		12.8 );
-	// Material jade( Colour(0, 0, 0), Colour(0.23, 0.23, 0.23), 
-	// 		Colour(0.516228, 0.516228, 0.516228), 
-	// 		12.8 );
-
 	// Defines a point light source.
-	raytracer.addLightSource( new PointLight(Point3D(0, 0, 5), 
+	raytracer.addLightSource( new AreaLight(Point3D(0, 0, 5), 
 				Colour(0.9, 0.9, 0.9) ) );
 
+	gold* mynewGold = new gold();
+	jade* mynewJade = new jade();
+	bronze* mynewBronze = new bronze();
+	glass* mynewGlass = new glass();
+	checkerBoard* mynewCheckerboard = new checkerBoard();
+
 	// Add a unit square into the scene with material mat.
-	SceneDagNode* sphere = raytracer.addObject( new UnitSphere(), &gold );
-	SceneDagNode* plane = raytracer.addObject( new UnitCheckboard(checkboardWhite, checkboardBlack), &jade );
-	
+	SceneDagNode* sphere = raytracer.addObject( new UnitSphere(), mynewGlass);
+	SceneDagNode* plane = raytracer.addObject( new UnitSquare(), mynewCheckerboard);
+	SceneDagNode* cylinder = raytracer.addObject(new UnitCylinder(), mynewBronze);
+
+
 	// Apply some transformations to the unit square.
 	double factor1[3] = { 1.0, 2.0, 1.0 };
-	double factor2[3] = { 20.0, 20.0, 20.0 };
-	raytracer.translate(sphere, Vector3D(0, 0, -5));	
+
+	double factor2[3] = { 10.0, 10.0, 10.0 };
+	double factor3[3] = { 1.0, 1.0, 1.0 };
+
+	raytracer.translate(cylinder, Vector3D(-2, 2, -4));
+	raytracer.scale(cylinder, Point3D(0, 0, 0), factor3);
+	//raytracer.rotate(cylinder, 'x', -45); 
+	//raytracer.rotate(cylinder, 'z', 45); 
+
+
+	raytracer.translate(sphere, Vector3D(0, 0, -5));
 	raytracer.rotate(sphere, 'x', -45); 
 	raytracer.rotate(sphere, 'z', 45); 
 	raytracer.scale(sphere, Point3D(0, 0, 0), factor1);
@@ -528,16 +482,27 @@ int main(int argc, char* argv[])
 	raytracer.scale(plane, Point3D(0, 0, 0), factor2);
 
 	// Render the scene, feel free to make the image smaller for
-	// testing purposes.	
+	// testing purposes.
+    time_t start_timer;
+    time(&start_timer);
+
 	raytracer.render(width, height, eye, view, up, fov, "view1.bmp");
 	
-	std::cout << "done image 1" << std::endl;
+    time_t finish_time;
+    time(&finish_time);
+    std::cout << "done view 1 in " << difftime(finish_time, start_timer) / 60 << " : " << difftime(timer, finish_time) << std::endl;
 
 	// Render it from a different point of view.
 	Point3D eye2(4, 2, 1);
 	Vector3D view2(-4, -2, -6);
+
+    time(&start_timer);
 	raytracer.render(width, height, eye2, view2, up, fov, "view2.bmp");
+    time(&finish_time);
+    std::cout << "done view 1 in " << difftime(finish_time, start_timer) / 60 << " : " << difftime(timer, finish_time) << std::endl;
 	
+    char* placeholder = new char[50];
+    scanf(placeholder);
 	return 0;
 }
 

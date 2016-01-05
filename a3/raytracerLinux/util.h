@@ -132,26 +132,39 @@ Colour operator *(double s, const Colour& c);
 Colour operator +(const Colour& u, const Colour& v); 
 std::ostream& operator <<(std::ostream& o, const Colour& c); 
 
-struct Material {
-	Material( Colour ambient, Colour diffuse, Colour specular, double exp) :
-		ambient(ambient), diffuse(diffuse), specular(specular), 
-		specular_exp(exp), isRefractive(false), refractiveIndex(0.0){}
+class Material {
+public:
+	Material() :
+	ambient(Colour()), diffuse(Colour()), specular(Colour()),
+	specular_exp(0.0), isRefractive(false), refractiveIndex(0.0){}
+
 	Material( Colour ambient, Colour diffuse, Colour specular, double exp, bool isRefractive, double refractiveIndex) :
 		ambient(ambient), diffuse(diffuse), specular(specular), 
 		specular_exp(exp), isRefractive(isRefractive), refractiveIndex(refractiveIndex){}
+
+	Material( Colour ambient, Colour diffuse, Colour specular, double exp) :
+	ambient(ambient), diffuse(diffuse), specular(specular), 
+	specular_exp(exp), isRefractive(false), refractiveIndex(0.0){}
 	
 	// Ambient components for Phong shading.
-	Colour ambient; 
+	Colour ambient;
 	// Diffuse components for Phong shading.
 	Colour diffuse;
 	// Specular components for Phong shading.
 	Colour specular;
-	// Specular expoent.
+	// Specular exponent.
 	double specular_exp;
 
 	bool isRefractive;
 
 	double refractiveIndex;
+
+	virtual Material* getMaterial(double s, double t) {
+		// if (isRefractive){
+		// 	std::cout << "getMaterial says refractive";
+		// }
+		return new Material(ambient, diffuse, specular, specular_exp, isRefractive, refractiveIndex); //Material(ambient, diffuse, specular, specular_exp);
+	}
 };
 
 struct Intersection {
@@ -161,13 +174,13 @@ struct Intersection {
 	Vector3D normal;
 	// Material at the intersection.
 	Material* mat;
-	bool setMat;
+
 	// Position of the intersection point on your ray.
 	// (i.e. point = ray.origin + t_value * ray.dir)
 	// This is used when you need to intersect multiply objects and
 	// only want to keep the nearest intersection.
 	double t_value;	
-	// Set to true when no intersection has occured.
+	// Set to true when no intersection has occurred.
 	bool none;
 };
 
@@ -175,11 +188,9 @@ struct Intersection {
 struct Ray3D {
 	Ray3D() {
 		intersection.none = true;
-		intersection.setMat = false; 
 	}
 	Ray3D( Point3D p, Vector3D v ) : origin(p), dir(v) {
 		intersection.none = true;
-		intersection.setMat = false;
 	}
 	// Origin and direction of the ray.
 	Point3D origin;
@@ -191,6 +202,37 @@ struct Ray3D {
 	// function.
 	Colour col;
 };
+
+
+
+
+	// // Defines a material for shading.
+class gold : public Material {
+public:
+	gold();
+};
+
+class jade : public Material {
+public:
+	jade();
+};
+
+class bronze : public Material {
+public:
+	bronze();
+};
+
+class glass : public Material {
+public:
+	glass();
+};
+
+class checkerBoard : public Material {
+public:
+	Material* getMaterial(double s, double t);
+};
+
+
 #endif
 
 

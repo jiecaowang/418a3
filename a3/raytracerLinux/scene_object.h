@@ -34,12 +34,8 @@ public:
 			const Matrix4x4& modelToWorld );
 };
 
-class UnitCheckboard : public SceneObject {
+class UnitCylinder : public SceneObject {
 public:
-	UnitCheckboard (Material& w, Material& b) : whiteCellMat(w), blackCellMat(b) { }
-	bool intersect( Ray3D& ray, const Matrix4x4& worldToModel,
+	bool intersect(Ray3D&, const Matrix4x4& worldToModel,
 			const Matrix4x4& modelToWorld );
-private:
-	Material& whiteCellMat;
-	Material& blackCellMat;
 };

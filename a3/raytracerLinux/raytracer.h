@@ -110,13 +110,13 @@ private:
 
 	// Return the colour of the ray after intersection and shading, call 
 	// this function recursively for reflection and refraction.  
-	Colour shadeRay( Ray3D& ray, int reflectionRecurance ); 
+	Colour shadeRay( Ray3D& ray, int reflectionRecurance, int refractionRecurance); 
+
+	bool isNotCriticalAngle( Ray3D& ray, double incomingIndex, double outgoingIndex);
 
 	Vector3D getStochasticOffset(double factor);
 
-	bool isNotCriticalAngle( Ray3D& ray, double incomingIndex, double outgoingIndex );
-
-	Colour shootMultiRayPerPixel(Ray3D& centerRay, int rayNum, double factor, int reflectionRecurance);
+	Colour shootMultiRayPerPixel(Ray3D& centerRay, int rayNum, double factor, int reflectionRecurance, int refractionRecurance);
 
 	// Constructs a view to world transformation matrix based on the
 	// camera parameters.
@@ -129,6 +129,8 @@ private:
 	// After intersection, calculate the colour of the ray by shading it
 	// with all light sources in the scene.
 	void computeShading( Ray3D& ray );
+
+	bool isInsideSphere(Vector3D incomingDir, Vector3D normal);
 
 	Vector3D reflect(Ray3D& ray);
 
