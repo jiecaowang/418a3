@@ -132,7 +132,6 @@ Colour operator *(double s, const Colour& c);
 Colour operator +(const Colour& u, const Colour& v); 
 std::ostream& operator <<(std::ostream& o, const Colour& c); 
 
-
 class Material {
 public:
 	Material() :
@@ -153,7 +152,7 @@ public:
 	Colour diffuse;
 	// Specular components for Phong shading.
 	Colour specular;
-	// Specular expoent.
+	// Specular exponent.
 	double specular_exp;
 
 	bool isRefractive;
@@ -181,7 +180,7 @@ struct Intersection {
 	// This is used when you need to intersect multiply objects and
 	// only want to keep the nearest intersection.
 	double t_value;	
-	// Set to true when no intersection has occured.
+	// Set to true when no intersection has occurred.
 	bool none;
 };
 
