@@ -7,3 +7,6 @@ a3/raytracerW32/Debug/
 /* Linux build generated files */
 raytracer
 *.o
+
+/* bmp output files */
+*.bmp
