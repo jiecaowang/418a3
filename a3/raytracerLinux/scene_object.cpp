@@ -34,7 +34,7 @@ bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 
 	if(-0.5 <= xInModel && xInModel <= 0.5 && -0.5 <= yInModel && yInModel <= 0.5){
 		//std::cout << "intersection! tvalue: " << t << std::endl;
-		// An intersection has occured, now check if we should update
+		// An intersection has occurred, now check if we should update
 		if (ray.intersection.none || t < ray.intersection.t_value){
 			// this unit square is the front most one to be intersected
 			// so we are update

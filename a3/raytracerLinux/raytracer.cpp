@@ -17,6 +17,9 @@
 #include <iostream>
 #include <cstdlib>
 #include <cassert>
+#include <time.h>
+
+#define sqr(a) pow(a, 2)
 
 Raytracer::Raytracer() : _lightSource(NULL) {
 	_root = new SceneDagNode();
@@ -315,7 +318,6 @@ bool Raytracer::isInsideSphere(Vector3D incomingDir, Vector3D normal){
 Vector3D Raytracer::reflect(Ray3D& ray){
 	Vector3D view = -ray.dir;
     Vector3D reflectedRayDir = (2 * (view.dot(ray.intersection.normal)) * ray.intersection.normal) - view;
-
     assert(ray.dir.dot(reflectedRayDir) != 0);
 
     return reflectedRayDir;
@@ -442,7 +444,6 @@ int main(int argc, char* argv[])
 	Vector3D up(0, 1, 0);
 	double fov = 60;
 
-
 	// Defines a point light source.
 	raytracer.addLightSource( new AreaLight(Point3D(0, 0, 5), 
 				Colour(0.9, 0.9, 0.9) ) );
@@ -461,6 +462,7 @@ int main(int argc, char* argv[])
 
 	// Apply some transformations to the unit square.
 	double factor1[3] = { 1.0, 2.0, 1.0 };
+
 	double factor2[3] = { 10.0, 10.0, 10.0 };
 	double factor3[3] = { 1.0, 1.0, 1.0 };
 
@@ -480,16 +482,27 @@ int main(int argc, char* argv[])
 	raytracer.scale(plane, Point3D(0, 0, 0), factor2);
 
 	// Render the scene, feel free to make the image smaller for
-	// testing purposes.	
+	// testing purposes.
+    time_t start_timer;
+    time(&start_timer);
+
 	raytracer.render(width, height, eye, view, up, fov, "view1.bmp");
 	
-	std::cout << "done view 1" << std::endl;
+    time_t finish_time;
+    time(&finish_time);
+    std::cout << "done view 1 in " << difftime(finish_time, start_timer) / 60 << " : " << difftime(timer, finish_time) << std::endl;
 
 	// Render it from a different point of view.
 	Point3D eye2(4, 2, 1);
 	Vector3D view2(-4, -2, -6);
+
+    time(&start_timer);
 	raytracer.render(width, height, eye2, view2, up, fov, "view2.bmp");
+    time(&finish_time);
+    std::cout << "done view 1 in " << difftime(finish_time, start_timer) / 60 << " : " << difftime(timer, finish_time) << std::endl;
 	
+    char* placeholder = new char[50];
+    scanf(placeholder);
 	return 0;
 }
 

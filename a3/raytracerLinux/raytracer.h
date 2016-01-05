@@ -132,9 +132,10 @@ private:
 
 	bool isInsideSphere(Vector3D incomingDir, Vector3D normal);
 
-	Vector3D refract(Ray3D& ray, double incomingIndex, double outgoingIndex);
-
 	Vector3D reflect(Ray3D& ray);
+
+	Vector3D refract(Ray3D& ray, double incomingIndex, double refractedIndex);
+
 	int isSpecular(Material* mat);
 
 	// Width and height of the viewport.
