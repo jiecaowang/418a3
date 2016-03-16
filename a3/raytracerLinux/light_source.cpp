@@ -13,12 +13,6 @@
 #include "light_source.h"
 
 void PointLight::shade( Ray3D& ray ) {
-	// std::cout << "trying to shade" << std::endl;
-	// std::cout << "type\t\t\t\tray\t\t\t\tlight" << std::endl;
-	// std::cout << "ambient:\t\t" << ray.intersection.mat->ambient << "\t\t\t\t" << _col_ambient << std::endl;
-	// std::cout << "diffuse:\t\t" << ray.intersection.mat->diffuse << "\t\t" << _col_diffuse << std::endl;
-	// std::cout << "specular:\t\t" << ray.intersection.mat->specular << "\t\t" << _col_specular << std::endl;
-	// std::cout << std::endl;
 	
 	// Everything taken from http://www.dgp.toronto.edu/~karan/courses/418/Notes/BasicRayTracing.pdf
 	
@@ -61,15 +55,11 @@ void PointLight::shade( Ray3D& ray ) {
         ray.col.clamp();
         
     }
-	
-
-	// It is assumed at this point that the intersection information in ray 
-	// is available.  So be sure that traverseScene() is called on the ray 
-	// before this function.  
-
 }
 
-
+/*  This is really bad right now and was a hack when first put together. 
+ *  Need to rethink area light sources
+ */
 void AreaLight::shade( Ray3D& ray ) {
     
     Colour I_a = _col_ambient;
@@ -110,9 +100,5 @@ void AreaLight::shade( Ray3D& ray ) {
     ray.col = 0.25 * ray.col;
 
     ray.col.clamp();
-
-    // It is assumed at this point that the intersection information in ray 
-    // is available.  So be sure that traverseScene() is called on the ray 
-    // before this function.  
 
 }
