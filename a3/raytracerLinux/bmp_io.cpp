@@ -523,6 +523,7 @@ void bmp_24_data_write(std::ofstream &file_out, unsigned long int width,
             indexr = indexr + 1;
         }
 
+        int i;
         for (i = 0; i < padding; i++)
         {
             file_out << 0;
