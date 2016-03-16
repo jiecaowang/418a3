@@ -16,13 +16,11 @@
 #include <iostream>
 #include <cmath>
 
-#ifndef M_PI
 #define M_PI	3.14159265358979323846
-#endif
 
-#ifndef EPSILON
 #define EPSILON	0.00001
-#endif
+
+#define RECURSIVE_RECURRANCE 2
 
 class Point3D {
 public:

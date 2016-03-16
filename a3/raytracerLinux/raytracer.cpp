@@ -191,7 +191,6 @@ void Raytracer::computeShading( Ray3D& ray ) {
 		// Each lightSource provides its own shading function.
 		curLight->light->shade(ray);
 
-
 		if(!ray.intersection.none){
 			Colour totalColour;
 			Colour currentColour = ray.col;
@@ -204,8 +203,6 @@ void Raytracer::computeShading( Ray3D& ray ) {
         		traverseScene(_root, newRay);
 
         		if(!newRay.intersection.none && !newRay.intersection.point.isClose(ray.intersection.point)){
-        			//std::cout << "old intersection!     " << ray.intersection.point << std::endl;
-        			//std::cout << "new intersection!     " << newRay.intersection.point << std::endl;
         		    //in shadow
         	    	currentColour = 0.6 * currentColour;
         		}
@@ -241,7 +238,7 @@ void Raytracer::flushPixelBuffer( char *file_name ) {
 	delete _bbuffer;
 }
 
-Colour Raytracer::shadeRay( Ray3D& ray, int reflectionRecurance, int refractionRecurance) {
+Colour Raytracer::shadeRay( Ray3D& ray, int recursiveRecurance) {
 	Colour col(0.0, 0.0, 0.0); 
 	traverseScene(_root, ray); 
 	
@@ -250,26 +247,17 @@ Colour Raytracer::shadeRay( Ray3D& ray, int reflectionRecurance, int refractionR
  	 */
 	if(!ray.intersection.none) {
 		if(ray.intersection.mat->isRefractive){
-			// std::cout << " is refractive" << "\n";
-			if(refractionRecurance > 0){
-				// std::cout << " refractionRecurance" << refractionRecurance << "\n";
+            if (recursiveRecurance > 0){
 				double incomingIndex;
 				double outgoingIndex;
-				if(isInsideSphere(ray.dir, ray.intersection.normal)){
-					// std::cout << " Inside of Sphere" << "\n";
-					incomingIndex = ray.intersection.mat->refractiveIndex;
-					outgoingIndex = 1.0;
-					ray.intersection.normal = -1 * ray.intersection.normal;
-				} else {
-					// std::cout << " Outside of Sphere" << "\n";
-					incomingIndex = 1.0;
-					outgoingIndex = ray.intersection.mat->refractiveIndex;
-				}
+
+				incomingIndex = 1.0;
+				outgoingIndex = ray.intersection.mat->refractiveIndex;
 
 				if (isNotCriticalAngle(ray, incomingIndex, outgoingIndex)){
 					Vector3D refractedDir = refract(ray, 1.0, ray.intersection.mat->refractiveIndex);
 					Ray3D newRay(ray.intersection.point + EPSILON * refractedDir, refractedDir);
-					Colour newCol = shadeRay(newRay, reflectionRecurance, refractionRecurance-1);
+                    Colour newCol = shadeRay(newRay, recursiveRecurance-1);
 					col = newCol;
 					// std::cout << " New col: " << newCol << "\n";
 					col.clamp();
@@ -279,7 +267,7 @@ Colour Raytracer::shadeRay( Ray3D& ray, int reflectionRecurance, int refractionR
 					Ray3D newRay(ray.intersection.point + EPSILON * reflectedDir, reflectedDir);
 
 					//compute new shading
-					Colour newCol = shadeRay(newRay, reflectionRecurance-1, refractionRecurance);
+                    Colour newCol = shadeRay(newRay, recursiveRecurance-1);
 					
 					col = newCol;
 
@@ -290,14 +278,14 @@ Colour Raytracer::shadeRay( Ray3D& ray, int reflectionRecurance, int refractionR
 			computeShading(ray);
 			col = ray.col;
 
-			if(reflectionRecurance > 0 && isSpecular(ray.intersection.mat)){
+            if (recursiveRecurance > 0 && isSpecular(ray.intersection.mat)){
 
 				Vector3D reflectedDir = reflect(ray);
 				// change direction of ray
 				Ray3D newRay(ray.intersection.point + EPSILON * reflectedDir, reflectedDir);
 
 				//compute new shading
-				Colour newCol = shadeRay(newRay, reflectionRecurance-1, 0);
+                Colour newCol = shadeRay(newRay, recursiveRecurance - 1);
 				
 				col = 1 * ray.col + .1 * newCol;
 
@@ -311,10 +299,6 @@ Colour Raytracer::shadeRay( Ray3D& ray, int reflectionRecurance, int refractionR
 	return col; 
 }
 
-bool Raytracer::isInsideSphere(Vector3D incomingDir, Vector3D normal){
-	return (incomingDir.dot(normal) > 0);
-}
-
 Vector3D Raytracer::reflect(Ray3D& ray){
 	Vector3D view = -ray.dir;
     Vector3D reflectedRayDir = (2 * (view.dot(ray.intersection.normal)) * ray.intersection.normal) - view;
@@ -324,19 +308,12 @@ Vector3D Raytracer::reflect(Ray3D& ray){
 }
 
 bool Raytracer::isNotCriticalAngle( Ray3D& ray, double incomingIndex, double outgoingIndex ) {
-	if (incomingIndex < outgoingIndex){
-		// hitting sphere
-		return true;
-	} else {
-		// inside sphere
-		double criticalAngle = asin(outgoingIndex/incomingIndex);
-		double incomingTheta = acos(-1 * ray.dir.dot(ray.intersection.normal));
-		return incomingTheta < criticalAngle;
-	}
+	double criticalAngle = asin(outgoingIndex/incomingIndex);
+	double incomingTheta = acos(-1 * ray.dir.dot(ray.intersection.normal));
+	return (incomingTheta < criticalAngle);
 }
 
 Vector3D Raytracer::refract(Ray3D& ray, double incomingIndex, double outgoingIndex){
- 	// n stands for refreactive index		 	// n stands for refreactive index
 	Vector3D incoming = Vector3D(ray.dir);
 	incoming.normalize();
 	Vector3D normal = Vector3D(ray.intersection.normal);
@@ -378,7 +355,7 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view,
 			imagePlane[2] = -1;
 
 			// TODO: Convert ray to world space and call 
-			// shadeRay(ray) to generate pixel colour. 	
+			// shadeRay(ray) to generate pixel colour.
 			
 			Ray3D ray(origin, Vector3D(imagePlane[0], imagePlane[1], imagePlane[2]));
 			ray.dir =  viewToWorld * ray.dir;
@@ -388,7 +365,7 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view,
 			// one center ray per pixel
 			// Colour col = shadeRay(ray, 0, 0); 
 			// anti aliasing by shooting multiple ray per pixel
-			Colour col = shootMultiRayPerPixel(ray, 1, factor, 1, 2);
+			Colour col = shootRaysPerPixel(ray, 1);
 
 			_rbuffer[i*width+j] = int(col[0]*255);
 			_gbuffer[i*width+j] = int(col[1]*255);
@@ -406,15 +383,15 @@ Vector3D Raytracer::getStochasticOffset(double factor){
 	return Vector3D(xOffset, yOffset, zOffset);
 }
 
-Colour Raytracer::shootMultiRayPerPixel(Ray3D& centerRay, int rayNum, double factor, int reflectionRecurance, int refractionRecurance){
+Colour Raytracer::shootRaysPerPixel(Ray3D& centerRay, int rayNum){
 	// shoot multiple stochastic rays around this ray
 	
 	Colour sumCol(0.0, 0.0, 0.0); 
 	int	i = rayNum;
 	while(i > 0){
-		Ray3D stochasticRay(centerRay.origin, centerRay.dir + getStochasticOffset(factor));
+		Ray3D stochasticRay(centerRay.origin, centerRay.dir);
 		stochasticRay.dir.normalize();
-		Colour stochasticCol = shadeRay(stochasticRay, reflectionRecurance, refractionRecurance);
+		Colour stochasticCol = shadeRay(stochasticRay, RECURSIVE_RECURRANCE);
 		sumCol = sumCol + stochasticCol;
 		i--;
 	}
@@ -502,7 +479,7 @@ int main(int argc, char* argv[])
     std::cout << "done view 1 in " << difftime(finish_time, start_timer) / 60 << " : " << difftime(start_timer, finish_time) << std::endl;
 	
     char* placeholder = new char[50];
-    scanf(placeholder);
+    scanf_s(placeholder);
 	return 0;
 }
 
