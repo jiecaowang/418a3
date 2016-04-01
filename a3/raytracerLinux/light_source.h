@@ -24,11 +24,8 @@ public:
 // colour.
 class PointLight : public LightSource {
 public:
-	PointLight( Point3D pos, Colour col ) : _pos(pos), _col_ambient(col), 
-	_col_diffuse(col), _col_specular(col) {}
-	PointLight( Point3D pos, Colour ambient, Colour diffuse, Colour specular ) 
-	: _pos(pos), _col_ambient(ambient), _col_diffuse(diffuse), 
-	_col_specular(specular) {}
+    PointLight(Point3D pos, Colour col);
+    PointLight(Point3D pos, Colour ambient, Colour diffuse, Colour specular);
 	void shade( Ray3D& ray );
 	Point3D get_position() const { return _pos; }
 	
@@ -38,21 +35,3 @@ private:
 	Colour _col_diffuse; 
 	Colour _col_specular; 
 };
-
-class AreaLight : public LightSource {
-public:
-	AreaLight( Point3D pos, Colour col ) : _pos(pos), _col_ambient(col), 
-	_col_diffuse(col), _col_specular(col) {}
-	AreaLight( Point3D pos, Colour ambient, Colour diffuse, Colour specular ) 
-	: _pos(pos), _col_ambient(ambient), _col_diffuse(diffuse), 
-	_col_specular(specular) {}
-	void shade( Ray3D& ray );
-	Point3D get_position() const { return _pos; }
-	
-private:
-	Point3D _pos;
-	Colour _col_ambient;
-	Colour _col_diffuse; 
-	Colour _col_specular; 
-};
-
