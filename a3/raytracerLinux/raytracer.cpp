@@ -422,7 +422,7 @@ int main(int argc, char* argv[])
 	double fov = 60;
 
 	// Defines a point light source.
-	raytracer.addLightSource( new AreaLight(Point3D(0, 0, 5), 
+	raytracer.addLightSource( new PointLight(Point3D(0, 0, 5), 
 				Colour(0.9, 0.9, 0.9) ) );
 
 	gold* mynewGold = new gold();
@@ -467,7 +467,7 @@ int main(int argc, char* argv[])
 	
     time_t finish_time;
     time(&finish_time);
-    std::cout << "done view 1 in " << difftime(finish_time, start_timer) / 60 << " : " << difftime(start_timer, finish_time) << std::endl;
+    std::cout << "done view 1 in " << difftime(finish_time, start_timer) <<  " seconds" <<std::endl;
 
 	// Render it from a different point of view.
 	Point3D eye2(4, 2, 1);
@@ -476,7 +476,7 @@ int main(int argc, char* argv[])
     time(&start_timer);
 	raytracer.render(width, height, eye2, view2, up, fov, "view2.bmp");
     time(&finish_time);
-    std::cout << "done view 1 in " << difftime(finish_time, start_timer) / 60 << " : " << difftime(start_timer, finish_time) << std::endl;
+    std::cout << "done view 1 in " << difftime(finish_time, start_timer) << " seconds" << std::endl;
 	
     char* placeholder = new char[50];
     scanf_s(placeholder);
