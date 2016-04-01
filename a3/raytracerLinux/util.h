@@ -9,18 +9,11 @@
 		modify this file as you see fit.
 
 ***********************************************************/
-
-#ifndef _UTIL_
-#define _UTIL_
+#pragma once
 
 #include <iostream>
 #include <cmath>
 
-#define M_PI	3.14159265358979323846
-
-#define EPSILON	0.00001
-
-#define RECURSIVE_RECURRANCE 2
 
 class Point3D {
 public:
@@ -229,11 +222,4 @@ class checkerBoard : public Material {
 public:
 	Material* getMaterial(double s, double t);
 };
-
-
-#endif
-
-
-
-
 

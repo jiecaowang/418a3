@@ -8,6 +8,7 @@
 
 ***********************************************************/
 
+#pragma once
 #include "util.h"
 
 // Base class for a light source.  You could define different types

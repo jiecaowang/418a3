@@ -11,6 +11,7 @@
 
 ***********************************************************/
 
+#pragma once
 #include "util.h"
 #include "scene_object.h"
 #include "light_source.h"

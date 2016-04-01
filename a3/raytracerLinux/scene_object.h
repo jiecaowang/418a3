@@ -8,6 +8,7 @@
 
 ***********************************************************/
 
+#pragma once
 #include "util.h"
 
 // All primitives should provide a intersection function.  
