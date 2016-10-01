@@ -13,7 +13,7 @@
 #include "light_source.h"
 
 void PointLight::shade( Ray3D& ray ) {
-	
+
     if (!ray.intersection.none){
 
         Colour I_a = _col_ambient;
@@ -55,15 +55,19 @@ void PointLight::shade( Ray3D& ray ) {
 }
 
 PointLight::PointLight(Point3D pos, Colour col) :
-_pos(pos), _col_ambient(col),
-_col_diffuse(col), _col_specular(col)
+	_pos(pos), 
+	_col_ambient(col),
+	_col_diffuse(col), 
+	_col_specular(col)
 {
 
 }
 
 PointLight::PointLight(Point3D pos, Colour ambient, Colour diffuse, Colour specular) :
-_pos(pos), _col_ambient(ambient), _col_diffuse(diffuse),
-_col_specular(specular)
+	_pos(pos), 
+	_col_ambient(ambient), 
+	_col_diffuse(diffuse),
+	_col_specular(specular)
 {
 
 }
