@@ -20,7 +20,7 @@ bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 	// Theory: http://www.cs.toronto.edu/~liviu/CSC418_Tutorials_F2013/T7-2.jpg
 	// Code: http://www.cs.toronto.edu/~liviu/CSC418_Tutorials_F2013/T7-3.jpg
 	
-	Ray3D rayInModel;
+	Ray3D rayInModel(0.0);
 	rayInModel.origin = worldToModel * ray.origin;
 	rayInModel.dir = worldToModel * ray.dir;
 	double t = -(rayInModel.origin[2])/rayInModel.dir[2];
@@ -55,7 +55,7 @@ bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 
 	//Src=http://www.ahinson.com/algorithms_general/Sections/Geometry/IntersectionOfParametricLineAndSphere.pdf
 
-	Ray3D rayInModel;
+	Ray3D rayInModel(0.0);
 	rayInModel.origin = worldToModel * ray.origin;
 	rayInModel.dir = worldToModel * ray.dir;
 
@@ -103,7 +103,7 @@ bool UnitCylinder::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 
 	//src = https://www.cl.cam.ac.uk/teaching/1999/AGraphHCI/SMAG/node2.html
 
-	Ray3D rayInModel;
+	Ray3D rayInModel(0.0);
 	rayInModel.origin = worldToModel * ray.origin;
 	rayInModel.dir = worldToModel * ray.dir;
 

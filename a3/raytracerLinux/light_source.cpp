@@ -20,10 +20,10 @@ void PointLight::shade( Ray3D& ray ) {
         Colour I_d = _col_diffuse;
         Colour I_s = _col_specular;
 
-        Colour r_a = ray.intersection.mat->ambient;
-        Colour r_d = ray.intersection.mat->diffuse;
-        Colour r_s = ray.intersection.mat->specular;
-        double alpha = ray.intersection.mat->specular_exp;
+        Colour r_a = ray.intersection.enteringMaterial->ambient;
+        Colour r_d = ray.intersection.enteringMaterial->diffuse;
+        Colour r_s = ray.intersection.enteringMaterial->specular;
+        double alpha = ray.intersection.enteringMaterial->specular_exp;
 
         Colour r_g = Colour();
         Colour I_spec = Colour();

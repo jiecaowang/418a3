@@ -44,6 +44,8 @@ public:
 	double dot(const Vector3D& other) const; 
 	Vector3D cross(const Vector3D& other) const; 
 
+    bool isNormalized() const;
+
 private:
 	double m_data[3];
 };
@@ -159,12 +161,25 @@ public:
 };
 
 struct Intersection {
+    Intersection() :
+        enteringMaterial(nullptr),
+        t_value(0),
+        none(true)
+    {
+
+    }
+
+    ~Intersection()
+    {
+        delete enteringMaterial;
+    }
+
 	// Location of intersection.
 	Point3D point;
 	// Normal at the intersection.
 	Vector3D normal;
 	// Material at the intersection.
-	Material* mat;
+	Material* enteringMaterial;
 
 	// Position of the intersection point on your ray.
 	// (i.e. point = ray.origin + t_value * ray.dir)
@@ -177,15 +192,22 @@ struct Intersection {
 
 // Ray structure. 
 struct Ray3D {
-	Ray3D() {
+    Ray3D() = delete;
+    Ray3D(double refractiveIndex) : 
+        refractiveIndex(refractiveIndex) {
 		intersection.none = true;
 	}
-	Ray3D( Point3D p, Vector3D v ) : origin(p), dir(v) {
+    Ray3D(Point3D p, Vector3D v, double refractiveIndex) : 
+        origin(p), 
+        dir(v), 
+        refractiveIndex(refractiveIndex) {
 		intersection.none = true;
 	}
+
 	// Origin and direction of the ray.
 	Point3D origin;
 	Vector3D dir;
+    double refractiveIndex;
 	// Intersection status, should be computed by the intersection
 	// function.
 	Intersection intersection;

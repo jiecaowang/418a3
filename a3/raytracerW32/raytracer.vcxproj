@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\raytracerLinux\bmp_io.h" />
+    <ClInclude Include="..\raytracerLinux\Common.h" />
     <ClInclude Include="..\raytracerLinux\light_source.h" />
     <ClInclude Include="..\raytracerLinux\raytracer.h" />
     <ClInclude Include="..\raytracerLinux\scene_object.h" />
@@ -112,7 +113,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <OutputFile>.\Debug/raytracer.exe</OutputFile>
+      <OutputFile>$(TargetDir)$(TargetFileName)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>.\Debug/raytracer.pdb</ProgramDatabaseFile>
@@ -143,7 +144,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <OutputFile>.\Debug/raytracer.exe</OutputFile>
+      <OutputFile>$(TargetDir)$(TargetFileName)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>.\Debug/raytracer.pdb</ProgramDatabaseFile>
@@ -175,7 +176,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </ClCompile>
     <Link>
-      <OutputFile>.\Release/raytracer.exe</OutputFile>
+      <OutputFile>$(TargetDir)$(TargetFileName)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <ProgramDatabaseFile>.\Release/raytracer.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
@@ -192,8 +193,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <Optimization>Full</Optimization>
-      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -206,7 +207,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </ClCompile>
     <Link>
-      <OutputFile>.\Release/raytracer.exe</OutputFile>
+      <OutputFile>$(TargetDir)$(TargetFileName)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <ProgramDatabaseFile>.\Release/raytracer.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>

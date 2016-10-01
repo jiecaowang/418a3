@@ -9,6 +9,7 @@
 ***********************************************************/
 
 #include <cmath>
+#include "Common.h"
 #include "util.h"
 
 Point3D::Point3D() {
@@ -86,6 +87,10 @@ double Vector3D::operator[](int i) const {
 double Vector3D::length() const
 {
 	return sqrt(dot(*this));
+}
+
+bool Vector3D::isNormalized() const {
+    return (m_data[0] * m_data[0] + m_data[1] * m_data[1] + m_data[2] * m_data[2] == 1.0);
 }
 
 double Vector3D::normalize() {
@@ -350,10 +355,10 @@ Matrix4x4 Matrix4x4::transpose() const {
 Matrix4x4 operator *(const Matrix4x4& a, const Matrix4x4& b) {
 	Matrix4x4 ret;
 
-	for(size_t i = 0; i < 4; ++i) {
+	for(int i = 0; i < 4; ++i) {
 		Vector4D row = a.getRow(i);
 
-		for(size_t j = 0; j < 4; ++j) {
+		for(int j = 0; j < 4; ++j) {
 			ret[i][j] = row[0] * b[0][j] + row[1] * b[1][j] + 
 				row[2] * b[2][j] + row[3] * b[3][j];
 		}

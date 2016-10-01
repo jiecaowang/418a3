@@ -10,7 +10,7 @@
 
 ***********************************************************/
 
-
+#include "Common.h"
 #include "raytracer.h"
 #include "bmp_io.h"
 #include <cmath>
@@ -169,7 +169,7 @@ void Raytracer::traverseScene( SceneDagNode* node, Ray3D& ray ) {
 		// Perform intersection.
 		if (node->obj->intersect(ray, _worldToModel, _modelToWorld)) {
 			Point3D texturePoint(_worldToModel * ray.intersection.point);
-			ray.intersection.mat = node->mat->getMaterial(texturePoint[0], texturePoint[1]);
+			ray.intersection.enteringMaterial = node->mat->getMaterial(texturePoint[0], texturePoint[1]);
 		}
 	}
 	// Traverse the children.
@@ -197,7 +197,7 @@ void Raytracer::computeShading( Ray3D& ray ) {
 			for(int i = 0; i < 4; i++) {
 				Vector3D newDir = ray.intersection.point - (curLight->light->get_position() + Vector3D(0, i*0.0000025, 0));
 				newDir.normalize();
-				Ray3D newRay(curLight->light->get_position(), newDir);
+				Ray3D newRay(curLight->light->get_position(), newDir, 0.0);
 
         		//compute new shading
         		traverseScene(_root, newRay);
@@ -246,17 +246,17 @@ Colour Raytracer::shadeRay( Ray3D& ray, int recursiveRecurance) {
  	 * if we need to recurse, then return blend, otherwise, return col
  	 */
 	if(!ray.intersection.none) {
-		if(ray.intersection.mat->isRefractive){
+		if(ray.intersection.enteringMaterial->isRefractive){
             if (recursiveRecurance > 0){
 				double incomingIndex;
 				double outgoingIndex;
 
-				incomingIndex = 1.0;
-				outgoingIndex = ray.intersection.mat->refractiveIndex;
+                incomingIndex = ray.refractiveIndex;
+				outgoingIndex = ray.intersection.enteringMaterial->refractiveIndex;
 
 				if (isNotCriticalAngle(ray, incomingIndex, outgoingIndex)){
-					Vector3D refractedDir = refract(ray, 1.0, ray.intersection.mat->refractiveIndex);
-					Ray3D newRay(ray.intersection.point + EPSILON * refractedDir, refractedDir);
+                    Vector3D refractedDir = refract(ray, incomingIndex, outgoingIndex);
+					Ray3D newRay(ray.intersection.point + EPSILON * refractedDir, refractedDir, outgoingIndex);
                     Colour newCol = shadeRay(newRay, recursiveRecurance-1);
 					col = newCol;
 					// std::cout << " New col: " << newCol << "\n";
@@ -264,7 +264,7 @@ Colour Raytracer::shadeRay( Ray3D& ray, int recursiveRecurance) {
 				} else {
 					Vector3D reflectedDir = reflect(ray);
 					// change direction of ray
-					Ray3D newRay(ray.intersection.point + EPSILON * reflectedDir, reflectedDir);
+					Ray3D newRay(ray.intersection.point + EPSILON * reflectedDir, reflectedDir, incomingIndex);
 
 					//compute new shading
                     Colour newCol = shadeRay(newRay, recursiveRecurance-1);
@@ -278,11 +278,11 @@ Colour Raytracer::shadeRay( Ray3D& ray, int recursiveRecurance) {
 			computeShading(ray);
 			col = ray.col;
 
-            if (recursiveRecurance > 0 && isSpecular(ray.intersection.mat)){
+            if (recursiveRecurance > 0 && isSpecular(ray.intersection.enteringMaterial)){
 
 				Vector3D reflectedDir = reflect(ray);
 				// change direction of ray
-				Ray3D newRay(ray.intersection.point + EPSILON * reflectedDir, reflectedDir);
+				Ray3D newRay(ray.intersection.point + EPSILON * reflectedDir, reflectedDir, ray.refractiveIndex);
 
 				//compute new shading
                 Colour newCol = shadeRay(newRay, recursiveRecurance - 1);
@@ -291,8 +291,6 @@ Colour Raytracer::shadeRay( Ray3D& ray, int recursiveRecurance) {
 
 				col.clamp();
 			}
-			if(ray.intersection.mat)
-				free(ray.intersection.mat);
 		}
 	}
 
@@ -315,15 +313,15 @@ bool Raytracer::isNotCriticalAngle( Ray3D& ray, double incomingIndex, double out
 
 Vector3D Raytracer::refract(Ray3D& ray, double incomingIndex, double outgoingIndex){
 	Vector3D incoming = Vector3D(ray.dir);
+    ASSERT(incoming.isNormalized());
 	incoming.normalize();
 	Vector3D normal = Vector3D(ray.intersection.normal);
 	normal.normalize();
 
 	double r = incomingIndex/outgoingIndex;
-	double c = (-1 * normal).dot(incoming);
+	double c = (normal).dot(incoming);
 
-	// ask this guy http://stackoverflow.com/questions/29758545/how-to-find-refraction-vector-from-incoming-vector-and-surface-normal
-	Vector3D refractive = r * incoming + (r * c - sqrt(1 - pow(r, 2) * (1 - pow(c, 2)))) * normal;
+	Vector3D refractive = r * incoming + (r * c - sqrt(1 - pow(r, 2) * (1 - pow(c, 2)))) * -normal;
 	refractive.normalize();
 
 	return refractive; 		 
@@ -357,7 +355,7 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view,
 			// TODO: Convert ray to world space and call 
 			// shadeRay(ray) to generate pixel colour.
 			
-			Ray3D ray(origin, Vector3D(imagePlane[0], imagePlane[1], imagePlane[2]));
+			Ray3D ray(origin, Vector3D(imagePlane[0], imagePlane[1], imagePlane[2]), 1.0);
 			ray.dir =  viewToWorld * ray.dir;
 			ray.dir.normalize();
 			ray.origin = viewToWorld * ray.origin;
@@ -389,7 +387,7 @@ Colour Raytracer::shootRaysPerPixel(Ray3D& centerRay, int rayNum){
 	Colour sumCol(0.0, 0.0, 0.0); 
 	int	i = rayNum;
 	while(i > 0){
-		Ray3D stochasticRay(centerRay.origin, centerRay.dir);
+		Ray3D stochasticRay(centerRay.origin, centerRay.dir, centerRay.refractiveIndex);
 		stochasticRay.dir.normalize();
 		Colour stochasticCol = shadeRay(stochasticRay, RECURSIVE_RECURRANCE);
 		sumCol = sumCol + stochasticCol;
@@ -425,16 +423,10 @@ int main(int argc, char* argv[])
 	raytracer.addLightSource( new PointLight(Point3D(0, 0, 5), 
 				Colour(0.9, 0.9, 0.9) ) );
 
-	gold* mynewGold = new gold();
-	jade* mynewJade = new jade();
-	bronze* mynewBronze = new bronze();
-	glass* mynewGlass = new glass();
-	checkerBoard* mynewCheckerboard = new checkerBoard();
-
 	// Add a unit square into the scene with material mat.
-	SceneDagNode* sphere = raytracer.addObject( new UnitSphere(), mynewGlass);
-	SceneDagNode* plane = raytracer.addObject( new UnitSquare(), mynewCheckerboard);
-	SceneDagNode* cylinder = raytracer.addObject(new UnitCylinder(), mynewBronze);
+    SceneDagNode* sphere = raytracer.addObject(new UnitSphere(), new glass());
+    SceneDagNode* plane = raytracer.addObject(new UnitSquare(), new checkerBoard());
+    SceneDagNode* cylinder = raytracer.addObject(new UnitCylinder(), new bronze());
 
 
 	// Apply some transformations to the unit square.
@@ -445,14 +437,10 @@ int main(int argc, char* argv[])
 
 	raytracer.translate(cylinder, Vector3D(-2, 2, -4));
 	raytracer.scale(cylinder, Point3D(0, 0, 0), factor3);
-	//raytracer.rotate(cylinder, 'x', -45); 
-	//raytracer.rotate(cylinder, 'z', 45); 
-
 
 	raytracer.translate(sphere, Vector3D(0, 0, -5));
 	raytracer.rotate(sphere, 'x', -45); 
 	raytracer.rotate(sphere, 'z', 45); 
-	raytracer.scale(sphere, Point3D(0, 0, 0), factor1);
 
 	raytracer.translate(plane, Vector3D(0, 0, -7));	
 	raytracer.rotate(plane, 'z', 45); 
@@ -478,8 +466,6 @@ int main(int argc, char* argv[])
     time(&finish_time);
     std::cout << "done view 1 in " << difftime(finish_time, start_timer) << " seconds" << std::endl;
 	
-    char* placeholder = new char[50];
-    scanf_s(placeholder);
 	return 0;
 }
 
