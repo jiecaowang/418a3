@@ -5,6 +5,7 @@ a3/raytracerW32/x64/
 *.opensdf
 *.sdf
 *.suo
+*.user
 
 /* Linux build generated files */
 raytracer
