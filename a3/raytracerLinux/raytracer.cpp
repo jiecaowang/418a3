@@ -10,6 +10,8 @@
 
 ***********************************************************/
 
+#define _USE_MATH_DEFINES
+
 #include "Common.h"
 #include "raytracer.h"
 #include "bmp_io.h"
@@ -424,9 +426,9 @@ int main(int argc, char* argv[])
 				Colour(0.9, 0.9, 0.9) ) );
 
 	// Add a unit square into the scene with material mat.
-    SceneDagNode* sphere = raytracer.addObject(new UnitSphere(), new glass());
+	SceneDagNode* sphere = raytracer.addObject(new UnitSphere(), new glass());
     SceneDagNode* plane = raytracer.addObject(new UnitSquare(), new checkerBoard());
-    SceneDagNode* cylinder = raytracer.addObject(new UnitCylinder(), new bronze());
+    //SceneDagNode* cylinder = raytracer.addObject(new UnitCylinder(), new bronze());
 
 
 	// Apply some transformations to the unit square.
@@ -435,8 +437,8 @@ int main(int argc, char* argv[])
 	double factor2[3] = { 10.0, 10.0, 10.0 };
 	double factor3[3] = { 1.0, 1.0, 1.0 };
 
-	raytracer.translate(cylinder, Vector3D(-2, 2, -4));
-	raytracer.scale(cylinder, Point3D(0, 0, 0), factor3);
+	//raytracer.translate(cylinder, Vector3D(-2, 2, -4));
+	//raytracer.scale(cylinder, Point3D(0, 0, 0), factor3);
 
 	raytracer.translate(sphere, Vector3D(0, 0, -5));
 	raytracer.rotate(sphere, 'x', -45); 
