@@ -308,6 +308,10 @@ Vector3D Raytracer::reflect(Ray3D& ray){
 }
 
 bool Raytracer::isNotCriticalAngle( Ray3D& ray, double incomingIndex, double outgoingIndex ) {
+    if (outgoingIndex > incomingIndex)
+    {
+        return true;
+    }
 	double criticalAngle = asin(outgoingIndex/incomingIndex);
 	double incomingTheta = acos(-1 * ray.dir.dot(ray.intersection.normal));
 	return (incomingTheta < criticalAngle);
