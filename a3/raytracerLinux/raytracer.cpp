@@ -171,6 +171,7 @@ void Raytracer::traverseScene( SceneDagNode* node, Ray3D& ray ) {
 		// Perform intersection.
 		if (node->obj->intersect(ray, _worldToModel, _modelToWorld)) {
 			Point3D texturePoint(_worldToModel * ray.intersection.point);
+			// need to figure out a way of exiting a material given this system
 			ray.intersection.enteringMaterial = node->mat->getMaterial(texturePoint[0], texturePoint[1]);
 		}
 	}
@@ -196,25 +197,25 @@ void Raytracer::computeShading( Ray3D& ray ) {
 		if(!ray.intersection.none){
 			Colour totalColour;
 			Colour currentColour = ray.col;
-			for(int i = 0; i < 4; i++) {
-				Vector3D newDir = ray.intersection.point - (curLight->light->get_position() + Vector3D(0, i*0.0000025, 0));
-				newDir.normalize();
-				Ray3D newRay(curLight->light->get_position(), newDir, 0.0);
+			//for(int i = 0; i < 4; i++) {
+				//Vector3D newDir = ray.intersection.point - (curLight->light->get_position() + Vector3D(0, i*0.0000025, 0));
+				//newDir.normalize();
+				//Ray3D newRay(curLight->light->get_position(), newDir);
 
         		//compute new shading
-        		traverseScene(_root, newRay);
+        		//traverseScene(_root, newRay);
 
-        		if(!newRay.intersection.none && !newRay.intersection.point.isClose(ray.intersection.point)){
+        		//if(!newRay.intersection.none && !newRay.intersection.point.isClose(ray.intersection.point)){
         		    //in shadow
-        	    	currentColour = 0.6 * currentColour;
-        		}
-        		totalColour = totalColour + currentColour;
-        	}
+        	    //	currentColour = 0.6 * currentColour;
+        		//}
+        		//totalColour = totalColour + currentColour;
+        	//}
         	totalColour = 0.25 * totalColour;
         	ray.col = totalColour;
         	ray.col.clamp();
 		
-		curLight = curLight->next;
+			curLight = curLight->next;
 		}
 	}
 }
@@ -241,58 +242,64 @@ void Raytracer::flushPixelBuffer( char *file_name ) {
 }
 
 Colour Raytracer::shadeRay( Ray3D& ray, int recursiveRecurance) {
+	if (recursiveRecurance == 0)
+	{
+		return ray.col;
+	}
+
 	Colour col(0.0, 0.0, 0.0); 
 	traverseScene(_root, ray); 
 	
 	/* Compute ray shading
  	 * if we need to recurse, then return blend, otherwise, return col
  	 */
-	if(!ray.intersection.none) {
-		if(ray.intersection.enteringMaterial->isRefractive){
-            if (recursiveRecurance > 0){
-				double incomingIndex;
-				double outgoingIndex;
+	if (ray.intersection.none)
+	{
+		return col;
+	}
+	if(ray.intersection.enteringMaterial->isRefractive){
+		double incomingIndex;
+		double outgoingIndex;
 
-                incomingIndex = ray.refractiveIndex;
-				outgoingIndex = ray.intersection.enteringMaterial->refractiveIndex;
+        incomingIndex = ray.pTravelingThroughMaterial->refractiveIndex;
+		outgoingIndex = ray.intersection.enteringMaterial->refractiveIndex;
 
-				if (isNotCriticalAngle(ray, incomingIndex, outgoingIndex)){
-                    Vector3D refractedDir = refract(ray, incomingIndex, outgoingIndex);
-					Ray3D newRay(ray.intersection.point + EPSILON * refractedDir, refractedDir, outgoingIndex);
-                    Colour newCol = shadeRay(newRay, recursiveRecurance-1);
-					col = newCol;
-					// std::cout << " New col: " << newCol << "\n";
-					col.clamp();
-				} else {
-					Vector3D reflectedDir = reflect(ray);
-					// change direction of ray
-					Ray3D newRay(ray.intersection.point + EPSILON * reflectedDir, reflectedDir, incomingIndex);
-
-					//compute new shading
-                    Colour newCol = shadeRay(newRay, recursiveRecurance-1);
-					
-					col = newCol;
-
-					col.clamp();	
-				}
-			}
+		if (isNotCriticalAngle(ray, incomingIndex, outgoingIndex)){
+            Vector3D refractedDir = refract(ray, incomingIndex, outgoingIndex);
+			Ray3D newRay(ray.intersection.point + EPSILON * refractedDir, refractedDir);
+			newRay.pTravelingThroughMaterial = ray.intersection.enteringMaterial;
+            Colour newCol = shadeRay(newRay, recursiveRecurance-1);
+			col = newCol;
+			col.clamp();
 		} else {
-			computeShading(ray);
-			col = ray.col;
+			Vector3D reflectedDir = reflect(ray);
+			// change direction of ray
+			Ray3D newRay(ray.intersection.point + EPSILON * reflectedDir, reflectedDir);
+			newRay.pTravelingThroughMaterial = ray.pTravelingThroughMaterial;
 
-            if (recursiveRecurance > 0 && isSpecular(ray.intersection.enteringMaterial)){
+			//compute new shading
+            Colour newCol = shadeRay(newRay, recursiveRecurance-1);
+					
+			col = newCol;
 
-				Vector3D reflectedDir = reflect(ray);
-				// change direction of ray
-				Ray3D newRay(ray.intersection.point + EPSILON * reflectedDir, reflectedDir, ray.refractiveIndex);
+			col.clamp();	
+		}
+	} else {
+		computeShading(ray);
+		col = ray.col;
 
-				//compute new shading
-                Colour newCol = shadeRay(newRay, recursiveRecurance - 1);
+        if (isSpecular(ray.intersection.enteringMaterial)){
+
+			Vector3D reflectedDir = reflect(ray);
+			// change direction of ray
+			Ray3D newRay(ray.intersection.point + EPSILON * reflectedDir, reflectedDir);
+			newRay.pTravelingThroughMaterial = ray.pTravelingThroughMaterial;
+			//compute new shading
+            Colour newCol = shadeRay(newRay, recursiveRecurance - 1);
 				
-				col = 1 * ray.col + .1 * newCol;
+			col = 1 * ray.col + .1 * newCol;
 
-				col.clamp();
-			}
+			col.clamp();
 		}
 	}
 
@@ -330,6 +337,8 @@ Vector3D Raytracer::refract(Ray3D& ray, double incomingIndex, double outgoingInd
 	Vector3D refractive = r * incoming + (r * c - sqrt(1 - pow(r, 2) * (1 - pow(c, 2)))) * -normal;
 	refractive.normalize();
 
+	refractive = ray.dir;
+
 	return refractive; 		 
 }		 
 
@@ -361,10 +370,11 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view,
 			// TODO: Convert ray to world space and call 
 			// shadeRay(ray) to generate pixel colour.
 			
-			Ray3D ray(origin, Vector3D(imagePlane[0], imagePlane[1], imagePlane[2]), 1.0);
+			Ray3D ray(origin, Vector3D(imagePlane[0], imagePlane[1], imagePlane[2]));
 			ray.dir =  viewToWorld * ray.dir;
 			ray.dir.normalize();
 			ray.origin = viewToWorld * ray.origin;
+			ray.pTravelingThroughMaterial = new air();
 			
 			// one center ray per pixel
 			// Colour col = shadeRay(ray, 0, 0); 
@@ -393,7 +403,8 @@ Colour Raytracer::shootRaysPerPixel(Ray3D& centerRay, int rayNum){
 	Colour sumCol(0.0, 0.0, 0.0); 
 	int	i = rayNum;
 	while(i > 0){
-		Ray3D stochasticRay(centerRay.origin, centerRay.dir, centerRay.refractiveIndex);
+		Ray3D stochasticRay(centerRay.origin, centerRay.dir);
+		stochasticRay.pTravelingThroughMaterial = centerRay.pTravelingThroughMaterial;
 		stochasticRay.dir.normalize();
 		Colour stochasticCol = shadeRay(stochasticRay, RECURSIVE_RECURRANCE);
 		sumCol = sumCol + stochasticCol;
@@ -411,8 +422,8 @@ int main(int argc, char* argv[])
 	// change this if you're just implementing part one of the 
 	// assignment.  
 	Raytracer raytracer;
-	int width = 600; 
-	int height = 400; 
+	int width = 300; 
+	int height = 200; 
 
 	if (argc == 3) {
 		width = atoi(argv[1]);
@@ -468,7 +479,7 @@ int main(int argc, char* argv[])
 	Vector3D view2(-4, -2, -6);
 
     time(&start_timer);
-	raytracer.render(width, height, eye2, view2, up, fov, "view2.bmp");
+	//raytracer.render(width, height, eye2, view2, up, fov, "view2.bmp");
     time(&finish_time);
     std::cout << "done view 1 in " << difftime(finish_time, start_timer) << " seconds" << std::endl;
 	
