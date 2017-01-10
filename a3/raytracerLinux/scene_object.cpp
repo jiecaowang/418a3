@@ -1,13 +1,3 @@
-/***********************************************************
-     Starter code for Assignment 3
-
-     This code was originally written by Jack Wang for
-		    CSC418, SPRING 2005
-
-		implements scene_object.h
-
-***********************************************************/
-
 #include <cmath>
 #include <iostream>
 #include "scene_object.h"
@@ -94,6 +84,11 @@ bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 	ray.intersection.normal = worldToModel.transpose() * ray.intersection.normal;
 	ray.intersection.normal.normalize();
 	ray.intersection.point = modelToWorld * ray.intersection.point;
+
+    if (ray.intersection.normal.dot(ray.dir) > 0)
+    {
+        ray.intersection.normal = -1 * ray.intersection.normal;
+    }
 
 	return true;
 }

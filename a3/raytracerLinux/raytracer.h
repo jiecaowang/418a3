@@ -100,7 +100,7 @@ private:
 	// this function recursively for reflection and refraction.  
 	Colour shadeRay( Ray3D& ray, int recursiveRecurance); 
 
-	bool isNotCriticalAngle( Ray3D& ray, double incomingIndex, double outgoingIndex);
+	bool isCriticalAngle( Ray3D& ray, double incomingIndex, double outgoingIndex);
 
 	Vector3D getStochasticOffset(double factor);
 
