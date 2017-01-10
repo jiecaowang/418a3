@@ -1,13 +1,3 @@
-/***********************************************************
-     Starter code for Assignment 3
-
-     This code was originally written by Jack Wang for
-		    CSC418, SPRING 2005
-
-		implements light_source.h
-
-***********************************************************/
-
 #include <cmath>
 #include <algorithm>
 #include "light_source.h"

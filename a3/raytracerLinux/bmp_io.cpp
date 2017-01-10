@@ -7,7 +7,6 @@
 
 #include "bmp_io.h"
 
-
 //
 //  BMP_BYTE_SWAP controls how the program assumes that the bytes in 
 //  multi-byte data are ordered.

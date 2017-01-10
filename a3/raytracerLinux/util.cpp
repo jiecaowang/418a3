@@ -1,13 +1,3 @@
-/***********************************************************
-     Starter code for Assignment 3
-
-     This code was originally written by Jack Wang for
-		    CSC418, SPRING 2005
-
-		implementations of util.h	
-
-***********************************************************/
-
 #include <cmath>
 #include "Common.h"
 #include "util.h"
@@ -90,7 +80,8 @@ double Vector3D::length() const
 }
 
 bool Vector3D::isNormalized() const {
-    return (m_data[0] * m_data[0] + m_data[1] * m_data[1] + m_data[2] * m_data[2] == 1.0);
+    double sizeOfVector = m_data[0] * m_data[0] + m_data[1] * m_data[1] + m_data[2] * m_data[2];
+    return (((sizeOfVector + EPSILON) > 1.0) && ((sizeOfVector - EPSILON) < 1.0));
 }
 
 double Vector3D::normalize() {

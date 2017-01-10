@@ -154,12 +154,6 @@ struct Intersection {
         t_value(0),
         none(true)
     {
-
-    }
-
-    ~Intersection()
-    {
-        delete enteringMaterial;
     }
 
 	// Location of intersection.
