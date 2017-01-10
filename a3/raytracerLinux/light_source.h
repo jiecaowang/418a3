@@ -1,13 +1,3 @@
-/***********************************************************
-     Starter code for Assignment 3
-
-     This code was originally written by Jack Wang for
-		    CSC418, SPRING 2005
-
-		   light source classes
-
-***********************************************************/
-
 #pragma once
 #include "util.h"
 

@@ -1,16 +1,3 @@
-/***********************************************************
-     Starter code for Assignment 3
-
-     This code was originally written by Jack Wang for
-		    CSC418, SPRING 2005
-
-		This file contains the interface and 
-		datastructures of the raytracer.  
-		Simple traversal and addition code to 
-		the datastructures are given to you.
-
-***********************************************************/
-
 #pragma once
 #include "util.h"
 #include "scene_object.h"
