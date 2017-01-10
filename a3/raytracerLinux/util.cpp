@@ -399,10 +399,13 @@ std::ostream& operator <<(std::ostream& os, const Matrix4x4& M) {
 		<< M[3][2] << " " << M[3][3] << "]";
 }
 
-
+air::air(){
+	name = "Air";
+	isRefractive = true;
+	refractiveIndex = 1.0;
+}
 
 gold::gold(){
-
 	// Ambient components for Phong shading.
 	ambient = Colour(0.3, 0.3, 0.3);
 	// Diffuse components for Phong shading.
@@ -414,6 +417,7 @@ gold::gold(){
 }
 
 glass::glass(){
+	name = "Glass";
 	// Ambient components for Phong shading.
 	ambient = Colour(0.0, 0.0, 0.0);
 	// Diffuse components for Phong shading.
@@ -425,11 +429,8 @@ glass::glass(){
 
 	isRefractive = true;
 
-	refractiveIndex = 1.5;
+	refractiveIndex = 1.0;
 }
-
-
-
 
 bronze::bronze(){
 	ambient = Colour(0.19125, 0.0735, 0.0225);

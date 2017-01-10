@@ -142,11 +142,10 @@ public:
 	double refractiveIndex;
 
 	virtual Material* getMaterial(double s, double t) {
-		// if (isRefractive){
-		// 	std::cout << "getMaterial says refractive";
-		// }
-		return new Material(ambient, diffuse, specular, specular_exp, isRefractive, refractiveIndex); //Material(ambient, diffuse, specular, specular_exp);
+		return this;
 	}
+
+	std::string name;
 };
 
 struct Intersection {
@@ -181,22 +180,20 @@ struct Intersection {
 
 // Ray structure. 
 struct Ray3D {
-    Ray3D() = delete;
-    Ray3D(double refractiveIndex) : 
-        refractiveIndex(refractiveIndex) {
+    Ray3D(){
 		intersection.none = true;
 	}
-    Ray3D(Point3D p, Vector3D v, double refractiveIndex) : 
+    Ray3D(Point3D p, Vector3D v) : 
         origin(p), 
-        dir(v), 
-        refractiveIndex(refractiveIndex) {
+        dir(v){
 		intersection.none = true;
 	}
 
 	// Origin and direction of the ray.
 	Point3D origin;
 	Vector3D dir;
-    double refractiveIndex;
+	Material* pTravelingThroughMaterial;
+    
 	// Intersection status, should be computed by the intersection
 	// function.
 	Intersection intersection;
@@ -206,7 +203,10 @@ struct Ray3D {
 };
 
 
-
+class air : public Material {
+public:
+	air();
+};
 
 	// // Defines a material for shading.
 class gold : public Material {
