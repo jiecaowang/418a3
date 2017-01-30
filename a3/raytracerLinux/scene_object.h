@@ -1,5 +1,6 @@
 #pragma once
-#include "util.h"
+
+#include "Ray.h"
 
 // All primitives should provide a intersection function.  
 // To create more primitives, inherit from SceneObject.

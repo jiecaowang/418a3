@@ -20,18 +20,26 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\raytracerLinux\bmp_io.h" />
+    <ClInclude Include="..\raytracerLinux\Colour.h" />
     <ClInclude Include="..\raytracerLinux\Common.h" />
+    <ClInclude Include="..\raytracerLinux\Intersection.h" />
     <ClInclude Include="..\raytracerLinux\light_source.h" />
+    <ClInclude Include="..\raytracerLinux\Materials.h" />
+    <ClInclude Include="..\raytracerLinux\Ray.h" />
     <ClInclude Include="..\raytracerLinux\raytracer.h" />
     <ClInclude Include="..\raytracerLinux\scene_object.h" />
-    <ClInclude Include="..\raytracerLinux\util.h" />
+    <ClInclude Include="..\raytracerLinux\Euclidean.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\raytracerLinux\bmp_io.cpp" />
+    <ClCompile Include="..\raytracerLinux\Colour.cpp" />
+    <ClCompile Include="..\raytracerLinux\Intersection.cpp" />
     <ClCompile Include="..\raytracerLinux\light_source.cpp" />
+    <ClCompile Include="..\raytracerLinux\Materials.cpp" />
+    <ClCompile Include="..\raytracerLinux\Ray.cpp" />
     <ClCompile Include="..\raytracerLinux\raytracer.cpp" />
     <ClCompile Include="..\raytracerLinux\scene_object.cpp" />
-    <ClCompile Include="..\raytracerLinux\util.cpp" />
+    <ClCompile Include="..\raytracerLinux\Euclidean.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <SccProjectName />
@@ -174,6 +182,7 @@
       <ProgramDataBaseFileName>.\Release/</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
+      <BrowseInformation>true</BrowseInformation>
     </ClCompile>
     <Link>
       <OutputFile>$(TargetDir)$(TargetFileName)</OutputFile>
@@ -190,6 +199,9 @@
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x1009</Culture>
     </ResourceCompile>
+    <Bscmake>
+      <PreserveSbr>true</PreserveSbr>
+    </Bscmake>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>

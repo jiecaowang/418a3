@@ -2,8 +2,7 @@
 #include <iostream>
 #include "scene_object.h"
 
-#define sqr(x) pow(x, 2)
-
+#define sqr(x) (x*x)
 
 bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 		const Matrix4x4& modelToWorld ) {

@@ -1,5 +1,7 @@
 #pragma once
-#include "util.h"
+
+#include "Euclidean.h"
+#include "Ray.h"
 
 // Base class for a light source.  You could define different types
 // of lights here, but point light is sufficient for most scenes you

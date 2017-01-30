@@ -1,15 +1,14 @@
 #define _USE_MATH_DEFINES
+#include <cmath>
 
 #include "Common.h"
 #include "raytracer.h"
 #include "bmp_io.h"
-#include <cmath>
+#include "Ray.h"
 #include <iostream>
-#include <cstdlib>
-#include <cassert>
 #include <time.h>
 
-#define sqr(a) pow(a, 2)
+#define sqr(a) (a*a)
 
 Raytracer::Raytracer() : _lightSource(NULL) {
 	_root = new SceneDagNode();
@@ -230,7 +229,7 @@ void Raytracer::flushPixelBuffer( char *file_name ) {
 }
 
 Colour Raytracer::shadeRay( Ray3D& ray, int recursiveRecurance) {
-    assert(ray.dir.isNormalized());
+    ASSERT(ray.dir.isNormalized());
 	if (recursiveRecurance == 0)
 	{
 		return ray.col;
@@ -246,6 +245,11 @@ Colour Raytracer::shadeRay( Ray3D& ray, int recursiveRecurance) {
 	{
 		return col;
 	}
+	if (ray.pTravelingThroughMaterial == ray.intersection.enteringMaterial)
+	{
+		ray.intersection.enteringMaterial = new air();
+	}
+	
 	if(ray.intersection.enteringMaterial->isRefractive){
 		double incomingIndex;
 		double outgoingIndex;
@@ -267,14 +271,7 @@ Colour Raytracer::shadeRay( Ray3D& ray, int recursiveRecurance) {
 		} else {
             Vector3D refractedDir = refract(ray, incomingIndex, outgoingIndex);
             Ray3D newRay(ray.intersection.point + EPSILON * refractedDir, refractedDir);
-            if (ray.pTravelingThroughMaterial == ray.intersection.enteringMaterial)
-            {
-                newRay.pTravelingThroughMaterial = new air();
-            }
-            else
-            {
-                newRay.pTravelingThroughMaterial = ray.intersection.enteringMaterial;
-            }
+			newRay.pTravelingThroughMaterial = ray.intersection.enteringMaterial;
             col = shadeRay(newRay, recursiveRecurance - 1);
 		}
         col.clamp();
@@ -303,7 +300,7 @@ Colour Raytracer::shadeRay( Ray3D& ray, int recursiveRecurance) {
 Vector3D Raytracer::reflect(Ray3D& ray){
 	Vector3D view = -ray.dir;
     Vector3D reflectedRayDir = (2 * (view.dot(ray.intersection.normal)) * ray.intersection.normal) - view;
-    assert(ray.dir.dot(reflectedRayDir) != 0);
+    ASSERT(ray.dir.dot(reflectedRayDir) != 0);
 
     return reflectedRayDir;
 }
@@ -314,8 +311,8 @@ bool Raytracer::isCriticalAngle( Ray3D& ray, double incomingIndex, double outgoi
         return false;
     }
 	double criticalAngle = asin(outgoingIndex/incomingIndex);
-    assert(ray.dir.isNormalized());
-    assert(ray.intersection.normal.isNormalized());
+    ASSERT(ray.dir.isNormalized());
+    ASSERT(ray.intersection.normal.isNormalized());
 	double incomingTheta = acos(-1 * ray.dir.dot(ray.intersection.normal));
 	return (incomingTheta > criticalAngle);
 }
@@ -328,12 +325,9 @@ Vector3D Raytracer::refract(Ray3D& ray, double incomingIndex, double outgoingInd
 	normal.normalize();
 
 	double r = incomingIndex/outgoingIndex;
-	double c = (normal).dot(incoming);
+	double c = (-normal).dot(incoming);
 
-	Vector3D refractive = r * incoming + (r * c - sqrt(1 - pow(r, 2) * (1 - pow(c, 2)))) * -normal;
-	refractive.normalize();
-
-	refractive = ray.dir;
+	Vector3D refractive = r * incoming + (r * c - sqrt(1 - r * r * (1 - c * c))) * normal;
 
 	return refractive; 		 
 }		 
