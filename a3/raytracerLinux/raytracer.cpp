@@ -463,14 +463,16 @@ int main(int argc, char* argv[])
     time(&finish_time);
     std::cout << "done view 1 in " << difftime(finish_time, start_timer) <<  " seconds" <<std::endl;
 
+	bmp_display("view1.bmp");
+
 	// Render it from a different point of view.
 	Point3D eye2(4, 2, 1);
 	Vector3D view2(-4, -2, -6);
 
     time(&start_timer);
-	raytracer.render(width, height, eye2, view2, up, fov, "view2.bmp");
+	//raytracer.render(width, height, eye2, view2, up, fov, "view2.bmp");
     time(&finish_time);
-    std::cout << "done view 1 in " << difftime(finish_time, start_timer) << " seconds" << std::endl;
+    std::cout << "done view 2 in " << difftime(finish_time, start_timer) << " seconds" << std::endl;
 	
 	return 0;
 }

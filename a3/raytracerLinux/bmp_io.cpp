@@ -7,6 +7,9 @@
 
 #include "bmp_io.h"
 
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+
 //
 //  BMP_BYTE_SWAP controls how the program assumes that the bytes in 
 //  multi-byte data are ordered.
@@ -2846,4 +2849,19 @@ void u_short_int_write(unsigned short int u_short_int_val,
     }
 
     return;
+}
+
+void bmp_display(std::string bmpPath)
+{
+	HDC hdc = CreateCompatibleDC(NULL);
+	HBITMAP cross = (HBITMAP)LoadImage(NULL, bmpPath.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	SelectObject(hdc, cross);
+
+	while (1)
+	{
+		HDC hdc_x = GetDC(HWND_DESKTOP);
+		BitBlt(hdc_x, 1000, 1000, 50, 50, hdc, 0, 0, SRCCOPY);
+		ReleaseDC(HWND_DESKTOP, hdc_x);
+	}
+		
 }

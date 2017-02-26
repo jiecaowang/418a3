@@ -79,3 +79,5 @@ void u_long_int_write ( unsigned long int u_long_int_val, std::ofstream &file_ou
 
 bool u_short_int_read ( unsigned short int *u_short_int_val, std::ifstream &file_in );
 void u_short_int_write ( unsigned short int u_short_int_val, std::ofstream &file_out );
+
+void bmp_display(std::string bmpPath);
