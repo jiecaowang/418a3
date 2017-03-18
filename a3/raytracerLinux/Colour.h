@@ -7,6 +7,7 @@ public:
 	Colour();
 	Colour(double r, double g, double b);
 	Colour(const Colour& other);
+	void Set(double r, double g, double b);
 
 	Colour& operator =(const Colour& other);
 	Colour operator *(const Colour& other);

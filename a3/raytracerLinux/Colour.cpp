@@ -18,6 +18,12 @@ Colour::Colour(const Colour& other) {
 	m_data[2] = other.m_data[2];
 }
 
+void Colour::Set(double r, double g, double b) {
+	m_data[0] = r;
+	m_data[1] = g;
+	m_data[2] = b;
+}
+
 Colour& Colour::operator =(const Colour& other) {
 	m_data[0] = other.m_data[0];
 	m_data[1] = other.m_data[1];
