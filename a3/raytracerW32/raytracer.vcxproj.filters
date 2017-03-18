@@ -45,6 +45,9 @@
     <ClInclude Include="..\raytracerLinux\Ray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\raytracerLinux\BaseMaterials.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\raytracerLinux\bmp_io.cpp">
@@ -72,6 +75,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\raytracerLinux\Ray.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\raytracerLinux\BaseMaterials.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

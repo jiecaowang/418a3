@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\raytracerLinux\BaseMaterials.h" />
     <ClInclude Include="..\raytracerLinux\bmp_io.h" />
     <ClInclude Include="..\raytracerLinux\Colour.h" />
     <ClInclude Include="..\raytracerLinux\Common.h" />
@@ -31,6 +32,7 @@
     <ClInclude Include="..\raytracerLinux\Euclidean.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\raytracerLinux\BaseMaterials.cpp" />
     <ClCompile Include="..\raytracerLinux\bmp_io.cpp" />
     <ClCompile Include="..\raytracerLinux\Colour.cpp" />
     <ClCompile Include="..\raytracerLinux\Intersection.cpp" />
