@@ -2,6 +2,25 @@
 #include <algorithm>
 #include "light_source.h"
 
+
+PointLight::PointLight(Point3D pos, Colour col) :
+	_pos(pos), 
+	_col_ambient(col),
+	_col_diffuse(col), 
+	_col_specular(col)
+{
+
+}
+
+PointLight::PointLight(Point3D pos, Colour ambient, Colour diffuse, Colour specular) :
+	_pos(pos), 
+	_col_ambient(ambient), 
+	_col_diffuse(diffuse),
+	_col_specular(specular)
+{
+
+}
+
 void PointLight::shade( Ray3D& ray ) {
 
     if (!ray.intersection.none){
@@ -15,15 +34,15 @@ void PointLight::shade( Ray3D& ray ) {
         Colour r_s = ray.intersection.enteringMaterial->specular;
         double alpha = ray.intersection.enteringMaterial->specular_exp;
 
-        Colour r_g = Colour();
-        Colour I_spec = Colour();
+        Colour r_g;
+        Colour I_spec;
 
-        Vector3D view = Vector3D(ray.origin - ray.intersection.point);
+        Vector3D view = ray.origin - ray.intersection.point;
 
         Vector3D n = ray.intersection.normal;
         n.normalize();
 
-        Vector3D s = Vector3D(get_position() - ray.intersection.point);
+        Vector3D s = get_position() - ray.intersection.point;
         s.normalize();
 
         Vector3D c = -ray.dir;
@@ -42,22 +61,4 @@ void PointLight::shade( Ray3D& ray ) {
 
         ray.col.clamp();
     }
-}
-
-PointLight::PointLight(Point3D pos, Colour col) :
-	_pos(pos), 
-	_col_ambient(col),
-	_col_diffuse(col), 
-	_col_specular(col)
-{
-
-}
-
-PointLight::PointLight(Point3D pos, Colour ambient, Colour diffuse, Colour specular) :
-	_pos(pos), 
-	_col_ambient(ambient), 
-	_col_diffuse(diffuse),
-	_col_specular(specular)
-{
-
 }
