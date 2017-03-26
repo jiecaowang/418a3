@@ -47,7 +47,45 @@ LightListNode* Raytracer::addLightSource( LightSource* light ) {
 	return _lightSource;
 }
 
-void Raytracer::rotate( SceneDagNode* node, char axis, double angle ) {
+
+void SceneDagNode::translate(Vector3D trans) 
+{
+	Matrix4x4 translation;
+
+	translation[0][3] = trans[0];
+	translation[1][3] = trans[1];
+	translation[2][3] = trans[2];
+	this->trans = this->trans * translation;
+	translation[0][3] = -trans[0];
+	translation[1][3] = -trans[1];
+	translation[2][3] = -trans[2];
+	invtrans = translation*invtrans;
+}
+
+void SceneDagNode::scale(Point3D origin, double factor[3]) 
+{
+	Matrix4x4 scale;
+
+	scale[0][0] = factor[0];
+	scale[0][3] = origin[0] - factor[0] * origin[0];
+	scale[1][1] = factor[1];
+	scale[1][3] = origin[1] - factor[1] * origin[1];
+	scale[2][2] = factor[2];
+	scale[2][3] = origin[2] - factor[2] * origin[2];
+	trans = trans*scale;
+
+	scale[0][0] = 1 / factor[0];
+	scale[0][3] = origin[0] - 1 / factor[0] * origin[0];
+	scale[1][1] = 1 / factor[1];
+	scale[1][3] = origin[1] - 1 / factor[1] * origin[1];
+	scale[2][2] = 1 / factor[2];
+	scale[2][3] = origin[2] - 1 / factor[2] * origin[2];
+	invtrans = scale*invtrans;
+}
+
+
+void SceneDagNode::rotate(char axis, double angle)
+{
 	Matrix4x4 rotation;
 	double toRadian = 2*M_PI/360.0;
 	int i;
@@ -80,45 +118,13 @@ void Raytracer::rotate( SceneDagNode* node, char axis, double angle ) {
 			break;
 		}
 		if (i == 0) {
-		    node->trans = node->trans*rotation; 	
+		    trans = trans * rotation; 	
 			angle = -angle;
 		} 
 		else {
-			node->invtrans = rotation*node->invtrans; 
+			invtrans = rotation*invtrans; 
 		}	
 	}
-}
-
-void Raytracer::translate( SceneDagNode* node, Vector3D trans ) {
-	Matrix4x4 translation;
-	
-	translation[0][3] = trans[0];
-	translation[1][3] = trans[1];
-	translation[2][3] = trans[2];
-	node->trans = node->trans*translation; 	
-	translation[0][3] = -trans[0];
-	translation[1][3] = -trans[1];
-	translation[2][3] = -trans[2];
-	node->invtrans = translation*node->invtrans; 
-}
-
-void Raytracer::scale( SceneDagNode* node, Point3D origin, double factor[3] ) {
-	Matrix4x4 scale;
-	
-	scale[0][0] = factor[0];
-	scale[0][3] = origin[0] - factor[0] * origin[0];
-	scale[1][1] = factor[1];
-	scale[1][3] = origin[1] - factor[1] * origin[1];
-	scale[2][2] = factor[2];
-	scale[2][3] = origin[2] - factor[2] * origin[2];
-	node->trans = node->trans*scale; 	
-	scale[0][0] = 1/factor[0];
-	scale[0][3] = origin[0] - 1/factor[0] * origin[0];
-	scale[1][1] = 1/factor[1];
-	scale[1][3] = origin[1] - 1/factor[1] * origin[1];
-	scale[2][2] = 1/factor[2];
-	scale[2][3] = origin[2] - 1/factor[2] * origin[2];
-	node->invtrans = scale*node->invtrans; 
 }
 
 Matrix4x4 Raytracer::initInvViewMatrix( Point3D eye, Vector3D view, 
@@ -360,23 +366,17 @@ int main(int argc, char* argv[])
     SceneDagNode* plane = raytracer.addObject(new UnitSquare(), new checkerBoard());
     //SceneDagNode* cylinder = raytracer.addObject(new UnitCylinder(), new bronze());
 
+	//cylinder->translate(Vector3D(-2, 2, -4));
+	//cylinder->scale(Point3D(0, 0, 0), factor3);
 
-	// Apply some transformations to the unit square.
-	double factor1[3] = { 1.0, 2.0, 1.0 };
+	sphere->translate(Vector3D(0, 0, -5));
+	sphere->rotate('x', -45);
+	sphere->rotate('z', 45);
 
-	double factor2[3] = { 10.0, 10.0, 10.0 };
-	double factor3[3] = { 1.0, 1.0, 1.0 };
-
-	//raytracer.translate(cylinder, Vector3D(-2, 2, -4));
-	//raytracer.scale(cylinder, Point3D(0, 0, 0), factor3);
-
-	raytracer.translate(sphere, Vector3D(0, 0, -5));
-	raytracer.rotate(sphere, 'x', -45); 
-	raytracer.rotate(sphere, 'z', 45); 
-
-	raytracer.translate(plane, Vector3D(0, 0, -17));	
-	raytracer.rotate(plane, 'z', 45); 
-	raytracer.scale(plane, Point3D(0, 0, 0), factor2);
+	plane->translate(Vector3D(0, 0, -17));	
+	plane->rotate('z', 45); 
+	double factor[3] = { 10.0, 10.0, 10.0 };
+	plane->scale(Point3D(0, 0, 0), factor);
 
 	RenderTarget backBuffer(height, width);
 	raytracer.SetRenderTarget(&backBuffer);

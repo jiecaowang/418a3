@@ -31,6 +31,10 @@ struct SceneDagNode {
 		if (!mat) delete mat;
 	}
 
+	void scale(Point3D origin, double factor[3]);
+	void translate(Vector3D trans);
+	void rotate(char axis, double angle);
+
 	// Pointer to geometry primitive, used for intersection.
 	SceneObject* obj;
 	// Pointer to material of the object, used in shading.
