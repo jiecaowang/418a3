@@ -26,10 +26,12 @@
     <ClInclude Include="..\raytracerLinux\Intersection.h" />
     <ClInclude Include="..\raytracerLinux\light_source.h" />
     <ClInclude Include="..\raytracerLinux\Materials.h" />
+    <ClInclude Include="..\raytracerLinux\Optics.h" />
     <ClInclude Include="..\raytracerLinux\Ray.h" />
     <ClInclude Include="..\raytracerLinux\raytracer.h" />
     <ClInclude Include="..\raytracerLinux\scene_object.h" />
     <ClInclude Include="..\raytracerLinux\Euclidean.h" />
+    <ClInclude Include="..\raytracerLinux\Surface.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\raytracerLinux\BaseMaterials.cpp" />
@@ -38,10 +40,12 @@
     <ClCompile Include="..\raytracerLinux\Intersection.cpp" />
     <ClCompile Include="..\raytracerLinux\light_source.cpp" />
     <ClCompile Include="..\raytracerLinux\Materials.cpp" />
+    <ClCompile Include="..\raytracerLinux\Optics.cpp" />
     <ClCompile Include="..\raytracerLinux\Ray.cpp" />
     <ClCompile Include="..\raytracerLinux\raytracer.cpp" />
     <ClCompile Include="..\raytracerLinux\scene_object.cpp" />
     <ClCompile Include="..\raytracerLinux\Euclidean.cpp" />
+    <ClCompile Include="..\raytracerLinux\Surface.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <SccProjectName />

@@ -1,6 +1,7 @@
 #pragma once
 #include "scene_object.h"
 #include "light_source.h"
+#include "Surface.h"
 
 // Linked list containing light sources in the scene.
 struct LightListNode {
@@ -51,11 +52,10 @@ public:
 	Raytracer();
 	~Raytracer();
 
-	// Renders an image fileName with width and height and a camera
+	// Renders an image with a camera
 	// positioned at eye, with view vector view, up vector up, and 
 	// field of view fov.
-	void render( int width, int height, Point3D eye, Vector3D view, 
-			Vector3D up, double fov, char* fileName );
+	void render(Point3D eye, Vector3D view,	Vector3D up, double fov);
 
 	// Add an object into the scene, with material mat.  The function
 	// returns a handle to the object node you just added, use the 
@@ -85,21 +85,14 @@ public:
 
 	// Apply scaling about a fixed point origin.
 	void scale( SceneDagNode* node, Point3D origin, double factor[3] );
+
+	// Set the pixel buffer to which to render to
+	void SetRenderTarget(RenderTarget* backBuffer);
 	
 private:
-	// Allocates and initializes the pixel buffer for rendering, you
-	// could add an interesting background to your scene by modifying 
-	// this function.
-	void initPixelBuffer();
-
-	// Saves the pixel buffer to a file and deletes the buffer.
-	void flushPixelBuffer(char *file_name);
-
 	// Return the colour of the ray after intersection and shading, call 
 	// this function recursively for reflection and refraction.  
 	Colour shadeRay( Ray3D& ray, int recursiveRecurance); 
-
-	bool isCriticalAngle( Ray3D& ray, double incomingIndex, double outgoingIndex);
 
 	Vector3D getStochasticOffset(double factor);
 
@@ -117,24 +110,12 @@ private:
 	// with all light sources in the scene.
 	void computeShading( Ray3D& ray );
 
-	Vector3D reflect(Ray3D& ray);
-
-	Vector3D refract(Ray3D& ray, double incomingIndex, double refractedIndex);
-
-	int isSpecular(Material* mat);
-
-	// Width and height of the viewport.
-	int _scrWidth;
-	int _scrHeight;
+	// Pixel Buffer which is being used to render to
+	RenderTarget* _backBuffer;
 
 	// Light list and scene graph.
 	LightListNode *_lightSource;
 	SceneDagNode *_root;
-
-	// Pixel buffer.
-	unsigned char* _rbuffer;
-	unsigned char* _gbuffer;
-	unsigned char* _bbuffer;
 
 	// Maintain global transformation matrices similar to OpenGL's matrix
 	// stack.  These are used during scene traversal. 

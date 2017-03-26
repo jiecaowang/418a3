@@ -5,10 +5,9 @@
 #include "raytracer.h"
 #include "bmp_io.h"
 #include "Ray.h"
+#include "Optics.h"
 #include <iostream>
 #include <time.h>
-
-#define sqr(a) (a*a)
 
 Raytracer::Raytracer() : _lightSource(NULL) {
 	_root = new SceneDagNode();
@@ -207,27 +206,6 @@ void Raytracer::computeShading( Ray3D& ray ) {
 	}
 }
 
-void Raytracer::initPixelBuffer() {
-	int numbytes = _scrWidth * _scrHeight * sizeof(unsigned char);
-	_rbuffer = new unsigned char[numbytes];
-	_gbuffer = new unsigned char[numbytes];
-	_bbuffer = new unsigned char[numbytes];
-	for (int i = 0; i < _scrHeight; i++) {
-		for (int j = 0; j < _scrWidth; j++) {
-			_rbuffer[i*_scrWidth+j] = 0;
-			_gbuffer[i*_scrWidth+j] = 0;
-			_bbuffer[i*_scrWidth+j] = 0;
-		}
-	}
-}
-
-void Raytracer::flushPixelBuffer( char *file_name ) {
-	bmp_write( file_name, _scrWidth, _scrHeight, _rbuffer, _gbuffer, _bbuffer );
-	delete _rbuffer;
-	delete _gbuffer;
-	delete _bbuffer;
-}
-
 Colour Raytracer::shadeRay( Ray3D& ray, int recursiveRecurance) {
     ASSERT(ray.dir.isNormalized());
 	if (recursiveRecurance == 0)
@@ -250,114 +228,68 @@ Colour Raytracer::shadeRay( Ray3D& ray, int recursiveRecurance) {
 		ray.intersection.enteringMaterial = new air();
 	}
 	
-	if(ray.intersection.enteringMaterial->isRefractive){
-		double incomingIndex;
-		double outgoingIndex;
+	if(ray.intersection.enteringMaterial->GetRefractiveIndex() > 0){
+		double incomingIndex = ray.pTravelingThroughMaterial->GetRefractiveIndex();
+		double outgoingIndex = ray.intersection.enteringMaterial->GetRefractiveIndex();
 
-        incomingIndex = ray.pTravelingThroughMaterial->refractiveIndex;
-		outgoingIndex = ray.intersection.enteringMaterial->refractiveIndex;
-
-		if (isCriticalAngle(ray, incomingIndex, outgoingIndex)){
+		if (Optics::isCriticalAngle(ray.dir, ray.intersection.normal, incomingIndex, outgoingIndex)){
             // change direction of ray
-            Vector3D reflectedDir = reflect(ray);
+            Vector3D reflectedDir = Optics::reflect(ray.dir, ray.intersection.normal);
 
             // send new ray with origin ray.origin + (offset * dir)
-            Ray3D newRay(ray.intersection.point + EPSILON * reflectedDir, reflectedDir);
+            Ray3D newRay(ray.intersection.point + g_epsilon * reflectedDir, reflectedDir);
             newRay.pTravelingThroughMaterial = ray.pTravelingThroughMaterial;
 
             //compute new shading
             col = shadeRay(newRay, recursiveRecurance - 1);
 
 		} else {
-            Vector3D refractedDir = refract(ray, incomingIndex, outgoingIndex);
-            Ray3D newRay(ray.intersection.point + EPSILON * refractedDir, refractedDir);
+            Vector3D refractedDir = Optics::refract(ray.dir, ray.intersection.normal, incomingIndex, outgoingIndex);
+            Ray3D newRay(ray.intersection.point + g_epsilon * refractedDir, refractedDir);
 			newRay.pTravelingThroughMaterial = ray.intersection.enteringMaterial;
+			newRay.TraveledThroughMaterial.push(ray.pTravelingThroughMaterial);
             col = shadeRay(newRay, recursiveRecurance - 1);
 		}
-        col.clamp();
 	} else {
 		computeShading(ray);
 		col = ray.col;
 
-        if (isSpecular(ray.intersection.enteringMaterial)){
+        if (ray.intersection.enteringMaterial->isSpecular()){
 
-			Vector3D reflectedDir = reflect(ray);
+			Vector3D reflectedDir =  Optics::reflect(ray.dir, ray.intersection.normal);
 			// change direction of ray
-			Ray3D newRay(ray.intersection.point + EPSILON * reflectedDir, reflectedDir);
+			Ray3D newRay(ray.intersection.point + g_epsilon * reflectedDir, reflectedDir);
 			newRay.pTravelingThroughMaterial = ray.pTravelingThroughMaterial;
 			//compute new shading
             Colour newCol = shadeRay(newRay, recursiveRecurance - 1);
 				
 			col = 1 * ray.col + .1 * newCol;
-
-			col.clamp();
 		}
 	}
 
 	return col; 
 }
 
-Vector3D Raytracer::reflect(Ray3D& ray){
-	Vector3D view = -ray.dir;
-    Vector3D reflectedRayDir = (2 * (view.dot(ray.intersection.normal)) * ray.intersection.normal) - view;
-    ASSERT(ray.dir.dot(reflectedRayDir) != 0);
-
-    return reflectedRayDir;
-}
-
-bool Raytracer::isCriticalAngle( Ray3D& ray, double incomingIndex, double outgoingIndex ) {
-    if (outgoingIndex > incomingIndex)
-    {
-        return false;
-    }
-	double criticalAngle = asin(outgoingIndex/incomingIndex);
-    ASSERT(ray.dir.isNormalized());
-    ASSERT(ray.intersection.normal.isNormalized());
-	double incomingTheta = acos(-1 * ray.dir.dot(ray.intersection.normal));
-	return (incomingTheta > criticalAngle);
-}
-
-Vector3D Raytracer::refract(Ray3D& ray, double incomingIndex, double outgoingIndex){
-	Vector3D incoming = Vector3D(ray.dir);
-    ASSERT(incoming.isNormalized());
-	incoming.normalize();
-	Vector3D normal = Vector3D(ray.intersection.normal);
-	normal.normalize();
-
-	double r = incomingIndex/outgoingIndex;
-	double c = (-normal).dot(incoming);
-
-	Vector3D refractive = r * incoming + (r * c - sqrt(1 - r * r * (1 - c * c))) * normal;
-
-	return refractive; 		 
-}		 
-
-int Raytracer::isSpecular(Material* mat){
-	return (mat->specular[0] * mat->specular[0] +  mat->specular[1] * mat->specular[1] + mat->specular[2] * mat->specular[2]) > 0.75;
-}
-
-void Raytracer::render( int width, int height, Point3D eye, Vector3D view, 
-		Vector3D up, double fov, char* fileName ) {
+void Raytracer::render(Point3D eye, Vector3D view, Vector3D up, double fov) 
+{
 	Matrix4x4 viewToWorld;
-	_scrWidth = width;
-	_scrHeight = height;
-	double factor = (double(height)/2)/tan(fov*M_PI/360.0);
+	double factor = (double(_backBuffer->GetHeight()) / 2) / tan(fov*M_PI / 360.0);
 
-	initPixelBuffer();
+	_backBuffer->InitRenderTarget();
 	viewToWorld = initInvViewMatrix(eye, view, up);
 
 	// Construct a ray for each pixel.
-	for (int i = 0; i < _scrHeight; i++) {
-		for (int j = 0; j < _scrWidth; j++) {
+	for (int i = 0; i < _backBuffer->GetHeight(); i++) {
+		for (int j = 0; j < _backBuffer->GetWidth(); j++) {
 			// Sets up ray origin and direction in view space, 
 			// image plane is at z = -1.
 			Point3D origin(0, 0, 0);
 			Point3D imagePlane;
-			imagePlane[0] = (-double(width)/2 + 0.5 + j)/factor;
-			imagePlane[1] = (-double(height)/2 + 0.5 + i)/factor;
+			imagePlane[0] = (-double(_backBuffer->GetWidth())/2 + 0.5 + j)/factor;
+			imagePlane[1] = (-double(_backBuffer->GetHeight())/2 + 0.5 + i)/factor;
 			imagePlane[2] = -1;
 
-			// TODO: Convert ray to world space and call 
+			// Convert ray to world space and call 
 			// shadeRay(ray) to generate pixel colour.
 			
 			Ray3D ray(origin, Vector3D(imagePlane[0], imagePlane[1], imagePlane[2]));
@@ -369,14 +301,9 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view,
 			// one center ray per pixel
 			// anti aliasing by shooting multiple ray per pixel
 			Colour col = shootRaysPerPixel(ray, 1);
-
-			_rbuffer[i*width+j] = int(col[0]*255);
-			_gbuffer[i*width+j] = int(col[1]*255);
-			_bbuffer[i*width+j] = int(col[2]*255);
+			_backBuffer->SetPixelColour(i, j, col);
 		}
 	}
-
-	flushPixelBuffer(fileName);
 }
 
 Vector3D Raytracer::getStochasticOffset(double factor){
@@ -395,12 +322,17 @@ Colour Raytracer::shootRaysPerPixel(Ray3D& centerRay, int rayNum){
 		Ray3D stochasticRay(centerRay.origin, centerRay.dir);
 		stochasticRay.pTravelingThroughMaterial = centerRay.pTravelingThroughMaterial;
 		stochasticRay.dir.normalize();
-		Colour stochasticCol = shadeRay(stochasticRay, RECURSIVE_RECURRANCE);
+		Colour stochasticCol = shadeRay(stochasticRay, g_recursive_recurrance);
 		sumCol = sumCol + stochasticCol;
 		i--;
 	}
 	sumCol = (1.0/rayNum) * sumCol;
 	return sumCol;
+}
+
+void Raytracer::SetRenderTarget(RenderTarget* backBuffer)
+{
+	_backBuffer = backBuffer;
 }
 
 int main(int argc, char* argv[])
@@ -418,12 +350,6 @@ int main(int argc, char* argv[])
 		width = atoi(argv[1]);
 		height = atoi(argv[2]);
 	}
-
-	// Camera parameters.
-	Point3D eye(0, 0, 1);
-	Vector3D view(0, 0, -1);
-	Vector3D up(0, 1, 0);
-	double fov = 60;
 
 	// Defines a point light source.
 	raytracer.addLightSource( new PointLight(Point3D(0, 0, 5), 
@@ -448,32 +374,52 @@ int main(int argc, char* argv[])
 	raytracer.rotate(sphere, 'x', -45); 
 	raytracer.rotate(sphere, 'z', 45); 
 
-	raytracer.translate(plane, Vector3D(0, 0, -7));	
+	raytracer.translate(plane, Vector3D(0, 0, -17));	
 	raytracer.rotate(plane, 'z', 45); 
 	raytracer.scale(plane, Point3D(0, 0, 0), factor2);
 
-	// Render the scene, feel free to make the image smaller for
-	// testing purposes.
-    time_t start_timer;
-    time(&start_timer);
+	RenderTarget backBuffer(height, width);
+	raytracer.SetRenderTarget(&backBuffer);
 
-	raytracer.render(width, height, eye, view, up, fov, "view1.bmp");
+	// Render the scene
+	time_t start_timer, finish_time;
+
+	{
+		// Camera parameters.
+		Point3D eye(0, 0, 1);
+		Vector3D view(0, 0, -1);
+		Vector3D up(0, 1, 0);
+		double fov = 60;
+
+		time(&start_timer);
+		raytracer.render(eye, view, up, fov);
+		time(&finish_time);
+
+		std::cout << "done view 1 in " << difftime(finish_time, start_timer) << " seconds" << std::endl;
+		bmp_write("view1.bmp", backBuffer.GetWidth(), backBuffer.GetHeight(),
+			backBuffer.GetRedChannel(), backBuffer.GetGreenChannel(), backBuffer.GetBlueChannel());
+
+		backBuffer.ClearRenderTarget();
+	}
 	
-    time_t finish_time;
-    time(&finish_time);
-    std::cout << "done view 1 in " << difftime(finish_time, start_timer) <<  " seconds" <<std::endl;
+	{
+		// Camera parameters.
+		Point3D eye(4, 2, 1);
+		Vector3D view(-4, -2, -6);
+		Vector3D up(0, 1, 0);
+		double fov = 60;
 
-	bmp_display("view1.bmp");
+		// Render it from a different point of view.
+		time(&start_timer);
+		raytracer.render(eye, view, up, fov);
+		time(&finish_time);
 
-	// Render it from a different point of view.
-	Point3D eye2(4, 2, 1);
-	Vector3D view2(-4, -2, -6);
+		std::cout << "done view 2 in " << difftime(finish_time, start_timer) << " seconds" << std::endl;
+		bmp_write("view2.bmp", backBuffer.GetWidth(), backBuffer.GetHeight(),
+			backBuffer.GetRedChannel(), backBuffer.GetGreenChannel(), backBuffer.GetBlueChannel());
 
-    time(&start_timer);
-	//raytracer.render(width, height, eye2, view2, up, fov, "view2.bmp");
-    time(&finish_time);
-    std::cout << "done view 2 in " << difftime(finish_time, start_timer) << " seconds" << std::endl;
-	
+		backBuffer.ClearRenderTarget();
+	}
+
 	return 0;
 }
-

@@ -27,9 +27,9 @@ Point3D& Point3D::operator =(const Point3D& other) {
 }
 
 bool Point3D::isClose(const Point3D& other){
-	bool close1 = (m_data[0] - other.m_data[0]) < EPSILON;
-	bool close2 = (m_data[1] - other.m_data[1]) < EPSILON;
-	bool close3 = (m_data[2] - other.m_data[2]) < EPSILON;
+	bool close1 = (m_data[0] - other.m_data[0]) < g_epsilon;
+	bool close2 = (m_data[1] - other.m_data[1]) < g_epsilon;
+	bool close3 = (m_data[2] - other.m_data[2]) < g_epsilon;
 	return close1 && close2 && close3;
 }
 
@@ -79,8 +79,8 @@ double Vector3D::length() const
 }
 
 bool Vector3D::isNormalized() const {
-    double sizeOfVector = m_data[0] * m_data[0] + m_data[1] * m_data[1] + m_data[2] * m_data[2];
-    return (((sizeOfVector + EPSILON) > 1.0) && ((sizeOfVector - EPSILON) < 1.0));
+    double sizeOfVector = sqr(m_data[0]) + sqr(m_data[1]) + sqr(m_data[2]);
+    return (((sizeOfVector + g_epsilon) > 1.0) && ((sizeOfVector - g_epsilon) < 1.0));
 }
 
 double Vector3D::normalize() {

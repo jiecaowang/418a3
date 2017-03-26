@@ -1,4 +1,5 @@
 #include "BaseMaterials.h"
+#include "Common.h"
 
 Material::Material() :
 Material(Colour(), Colour(), Colour(), 0.0, 0.0)
@@ -17,6 +18,7 @@ _specular(specular),
 _specular_exp(exp),
 _refractiveIndex(refractiveIndex)
 {
+	_isSpecular = (sqr(_specular[0]) + sqr(_specular[1]) + sqr(_specular[2])) > 0.75;
 }
 
 Material* Material::getMaterial(double s, double t)
@@ -44,6 +46,7 @@ void Material::SetSpecular(Colour specular, double specular_exponent)
 {
 	_specular = specular;
 	_specular_exp = specular_exponent;
+	_isSpecular = (sqr(_specular[0]) + sqr(_specular[1]) + sqr(_specular[2])) > 0.75;
 }
 
 void Material::SetRefraction(double refractiveIndex)
@@ -66,12 +69,23 @@ Colour Material::GetSpecular()
 	return _specular;
 }
 
+double Material::GetRefractiveIndex()
+{
+	return _refractiveIndex;
+}
+
 double Material::GetSpecularExponent()
 {
 	return _specular_exp;
 }
 
-std::ostream& operator <<(std::ostream& os, const Material& M) {
+bool Material::isSpecular()
+{
+	return _isSpecular;
+}
+
+std::ostream& operator <<(std::ostream& os, const Material& M) 
+{
 	return os << "M(" <<
 		"A( " << M._ambient << ") " <<
 		"D( " << M._diffuse << ") " <<

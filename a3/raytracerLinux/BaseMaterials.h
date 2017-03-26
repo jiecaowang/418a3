@@ -1,3 +1,4 @@
+#pragma once
 #include "Colour.h"
 
 class Material {
@@ -21,6 +22,9 @@ public:
 	Colour GetDiffuse();
 	Colour GetSpecular();
 	double GetSpecularExponent();
+	double GetRefractiveIndex();
+
+	bool isSpecular();
 
 	friend std::ostream& operator <<(std::ostream& os, const Material& M);
 
@@ -36,5 +40,9 @@ private:
 
 	double _refractiveIndex;
 
+	// saved isSpecularValue to save on costly square computations
+	bool _isSpecular;
+
 	std::string _name;
 };
+

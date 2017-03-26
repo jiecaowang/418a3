@@ -2190,7 +2190,7 @@ bool bmp_08_write_test(char *file_out_name)
     {
         for (i = 0; i < width; i++)
         {
-            *indexr = i % (j + 1);
+            *indexr = unsigned char(i % (j + 1));
             indexr = indexr + 1;
         }
     }

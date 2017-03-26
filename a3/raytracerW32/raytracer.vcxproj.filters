@@ -48,6 +48,12 @@
     <ClInclude Include="..\raytracerLinux\BaseMaterials.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\raytracerLinux\Optics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\raytracerLinux\Surface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\raytracerLinux\bmp_io.cpp">
@@ -78,6 +84,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\raytracerLinux\BaseMaterials.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\raytracerLinux\Optics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\raytracerLinux\Surface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

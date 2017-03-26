@@ -11,3 +11,8 @@ Ray3D::Ray3D(Point3D p, Vector3D v) :
 {
 	intersection.none = true;
 }
+
+Material* Ray3D::GetTravelingThroughMaterial()
+{
+	return TraveledThroughMaterial.top();
+}

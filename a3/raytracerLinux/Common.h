@@ -1,11 +1,10 @@
 #pragma once
 
-const float epsilon = 0.0001;
-const int recursive_recurrance = 3;
-const int anti_aliasing_factor = 0;
+const double g_epsilon = 0.00001;
+const int g_recursive_recurrance = 3;
+const int g_anti_aliasing_factor = 0;
 
-#define EPSILON	0.00001
-
+#define sqr(a) (a*a)
 
 #ifdef _DEBUG
 #define ASSERT(x) if(!x) __debugbreak() 
