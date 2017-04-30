@@ -78,21 +78,12 @@ public:
 	// Add a light source.
 	LightListNode* addLightSource( LightSource* light );
 
-	// Transformation functions are implemented by right-multiplying 
-	// the transformation matrix to the node's transformation matrix.
-	
-	// Apply rotation about axis 'x', 'y', 'z' angle degrees to node.
-	void rotate( SceneDagNode* node, char axis, double angle );
-
-	// Apply translation in the direction of trans to node.
-	void translate( SceneDagNode* node, Vector3D trans );
-
-	// Apply scaling about a fixed point origin.
-	void scale( SceneDagNode* node, Point3D origin, double factor[3] );
-
 	// Set the pixel buffer to which to render to
 	void SetRenderTarget(RenderTarget* backBuffer);
 	
+	// Render a debug ray originating from origin, in the direction dir
+	void ShootDebugRay(Point3D origin, Vector3D dir);
+
 private:
 	// Return the colour of the ray after intersection and shading, call 
 	// this function recursively for reflection and refraction.  

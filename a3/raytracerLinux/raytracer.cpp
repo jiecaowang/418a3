@@ -341,6 +341,11 @@ void Raytracer::SetRenderTarget(RenderTarget* backBuffer)
 	_backBuffer = backBuffer;
 }
 
+void Raytracer::ShootDebugRay(Point3D origin, Vector3D dir)
+{
+
+}
+
 int main(int argc, char* argv[])
 {	
 	// Build your scene and setup your camera here, by calling 
