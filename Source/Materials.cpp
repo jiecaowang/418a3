@@ -1,4 +1,5 @@
 #include "Materials.h"
+#include <cmath>
 
 air::air()
 {
@@ -47,7 +48,7 @@ checkerBoard::checkerBoard(){
 }
 
 Material* checkerBoard::getMaterial(double s, double t){
-	int xTest = static_cast<int>(floor((s + 0.5) * 10)) % 2;
-	int yTest = static_cast<int>(floor((t + 0.5) * 10)) % 2;
+	int xTest = static_cast<int>(std::floor((s + 0.5) * 10)) % 2;
+	int yTest = static_cast<int>(std::floor((t + 0.5) * 10)) % 2;
 	return (xTest == yTest) ? &White : &Black;
 }

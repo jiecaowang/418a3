@@ -1,5 +1,6 @@
 #include "Euclidean.h"
 #include "Common.h"
+#include <cmath>
 
 Point3D::Point3D() {
 	m_data[0] = 0.0;

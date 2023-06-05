@@ -54,22 +54,22 @@ void bmp_palette_write ( std::ofstream &file_out, unsigned long int colorsused,
   unsigned char *rparray, unsigned char *gparray, unsigned char *bparray,
   unsigned char *aparray );
 
-bool bmp_print_test ( char *file_in_name );
+bool bmp_print_test ( const char *file_in_name );
 
-bool bmp_read ( char *file_in_name, unsigned long int *width, long int *height, 
+bool bmp_read ( const char *file_in_name, unsigned long int *width, long int *height, 
   unsigned char **rarray, unsigned char **garray, unsigned char **barray );
-bool bmp_read_test ( char *file_in_name );
+bool bmp_read_test ( const char *file_in_name );
 
-bool bmp_write ( char *file_out_name, unsigned long int width, long int height, 
+bool bmp_write ( const char *file_out_name, unsigned long int width, long int height, 
   unsigned char *rarray, unsigned char *garray, unsigned char *barray );
 
-bool bmp_08_write ( char *file_out_name, unsigned long int width, long int height, 
+bool bmp_08_write ( const char *file_out_name, unsigned long int width, long int height, 
   unsigned char *rarray, unsigned char *garray, unsigned char *barray );
-bool bmp_08_write_test ( char *file_out_name );
+bool bmp_08_write_test ( const char *file_out_name );
 
-bool bmp_24_write ( char *file_out_name, unsigned long int width, long int height, 
+bool bmp_24_write ( const char *file_out_name, unsigned long int width, long int height, 
   unsigned char *rarray, unsigned char *garray, unsigned char *barray );
-bool bmp_24_write_test ( char *file_out_name );
+bool bmp_24_write_test ( const char *file_out_name );
 
 bool long_int_read ( long int *long_int_val, std::ifstream &file_in );
 void long_int_write ( long int long_int_val, std::ofstream &file_out );

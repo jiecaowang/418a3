@@ -1,5 +1,6 @@
 #include "Optics.h"
 #include "Common.h"
+#include <cmath>
 
 namespace Optics
 {

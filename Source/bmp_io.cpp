@@ -1463,7 +1463,7 @@ void bmp_palette_write(std::ofstream &file_out, unsigned long int colorsused,
 }
 //****************************************************************************
 
-bool bmp_print_test(char *file_in_name)
+bool bmp_print_test(const char*file_in_name)
 
 //****************************************************************************
 //
@@ -1672,7 +1672,7 @@ bool bmp_print_test(char *file_in_name)
 }
 //****************************************************************************
 
-bool bmp_read(char *file_in_name, unsigned long int *width, long int *height,
+bool bmp_read(const char*file_in_name, unsigned long int *width, long int *height,
     unsigned char **rarray, unsigned char **garray, unsigned char **barray)
 
     //****************************************************************************
@@ -1891,7 +1891,7 @@ bool bmp_read(char *file_in_name, unsigned long int *width, long int *height,
 }
 //****************************************************************************
 
-bool bmp_read_test(char *file_in_name)
+bool bmp_read_test(const char*file_in_name)
 
 //****************************************************************************
 //
@@ -1977,13 +1977,13 @@ bool bmp_read_test(char *file_in_name)
     return error;
 # undef VERBOSE
 }
-bool bmp_write(char *file_out_name, unsigned long int width, long int height,
+bool bmp_write(const char *file_out_name, unsigned long int width, long int height,
     unsigned char *rarray, unsigned char *garray, unsigned char *barray) {
     return bmp_24_write(file_out_name, width, height, rarray, garray, barray);
 }
 //****************************************************************************
 
-bool bmp_08_write(char *file_out_name, unsigned long int width, long int height,
+bool bmp_08_write(const char*file_out_name, unsigned long int width, long int height,
     unsigned char *rarray)
 
     //****************************************************************************
@@ -2123,7 +2123,7 @@ bool bmp_08_write(char *file_out_name, unsigned long int width, long int height,
 }
 //****************************************************************************
 
-bool bmp_08_write_test(char *file_out_name)
+bool bmp_08_write_test(const char*file_out_name)
 
 //****************************************************************************
 //
@@ -2190,7 +2190,7 @@ bool bmp_08_write_test(char *file_out_name)
     {
         for (i = 0; i < width; i++)
         {
-            *indexr = unsigned char(i % (j + 1));
+            *indexr = static_cast<unsigned char>(i % (j + 1));
             indexr = indexr + 1;
         }
     }
@@ -2224,7 +2224,7 @@ bool bmp_08_write_test(char *file_out_name)
 }
 //****************************************************************************
 
-bool bmp_24_write(char *file_out_name, unsigned long int width, long int height,
+bool bmp_24_write(const char *file_out_name, unsigned long int width, long int height,
     unsigned char *rarray, unsigned char *garray, unsigned char *barray)
 
     //****************************************************************************
@@ -2372,7 +2372,7 @@ bool bmp_24_write(char *file_out_name, unsigned long int width, long int height,
 }
 //****************************************************************************
 
-bool bmp_24_write_test(char *file_out_name)
+bool bmp_24_write_test(const char*file_out_name)
 
 //****************************************************************************
 //

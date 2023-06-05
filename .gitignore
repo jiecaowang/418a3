@@ -13,3 +13,5 @@ raytracer
 
 /* bmp output files */
 *.bmp
+
+build/*
